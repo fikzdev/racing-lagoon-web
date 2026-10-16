@@ -1,15 +1,17 @@
 // Configuración Global de Racing Lagoon Web
+const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+
 window.RACING_LAGOON_CONFIG = {
-  // Ruta del archivo del juego:
-  // - En desarrollo local: 'roms/racing_lagoon.zip'
-  // - En producción (Vercel): reemplaza por la URL directa de tu release en GitHub, Cloudflare R2 o Internet Archive.
-  romUrl: 'roms/racing_lagoon.zip',
+  // En desarrollo local usa el archivo del servidor local.
+  // En producción (Vercel) descarga directamente el disco alojado en el Release v1.0.0 de GitHub.
+  romUrl: isLocal 
+    ? 'roms/racing_lagoon.zip' 
+    : 'https://github.com/fikzdev/racing-lagoon-web/releases/download/v1.0.0/racing_lagoon.zip',
 
   // Identificador único para almacenar la Memory Card virtual de PS1 en el navegador (IndexedDB)
   gameId: 992038,
 
   // Servidor de señalización Netplay para juego multijugador online
-  // Por defecto utiliza el servidor integrado del proyecto (puerto actual / dominio actual)
   netplayServer: window.location.origin,
 
   // Servidores STUN y TURN de alta disponibilidad para conectar jugadores por WebRTC
