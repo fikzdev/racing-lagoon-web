@@ -53,6 +53,46 @@ document.addEventListener('DOMContentLoaded', () => {
     window.location.reload();
   });
 
+  // Visual Enhancement Toolbar Setup
+  stageViewport.classList.add('aspect-4-3');
+  const crtOverlay = document.getElementById('crt-overlay');
+  const filterButtons = document.querySelectorAll('[data-filter]');
+  const aspectButtons = document.querySelectorAll('[data-aspect]');
+
+  filterButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      filterButtons.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      const filterType = btn.dataset.filter;
+      stageViewport.classList.remove('filter-smooth', 'filter-sharp', 'filter-neon');
+      crtOverlay.classList.remove('active');
+
+      if (filterType === 'crt') {
+        crtOverlay.classList.add('active');
+      } else if (filterType === 'smooth') {
+        stageViewport.classList.add('filter-smooth');
+      } else if (filterType === 'neon') {
+        stageViewport.classList.add('filter-neon');
+      }
+    });
+  });
+
+  aspectButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      aspectButtons.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      const aspect = btn.dataset.aspect;
+      stageViewport.classList.remove('aspect-4-3', 'aspect-16-9');
+      if (aspect === '4-3') {
+        stageViewport.classList.add('aspect-4-3');
+      } else if (aspect === '16-9') {
+        stageViewport.classList.add('aspect-16-9');
+      }
+    });
+  });
+
   // Probe ROM availability
   async function initRomCheck() {
     loadingSpinner.style.display = 'inline-block';
