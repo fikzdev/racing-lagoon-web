@@ -1,0 +1,13 @@
+# Git Ignore for Racing Lagoon Web
+node_modules/
+.DS_Store
+
+# Large ROM files (GitHub limit is 100MB per file)
+roms/*.zip
+roms/*.bin
+roms/*.iso
+roms/*.chd
+*.bin
+*.ecm
+*.cue
+Racing Lagoon (Japan) [SLPS-02038] (1)/

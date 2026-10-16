@@ -1,0 +1,12 @@
+{
+  "name": "racing-lagoon-web",
+  "version": "1.0.0",
+  "description": "Racing Lagoon (PS1) Web Player & Reverse Engineering Playground",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": ["ps1", "racing-lagoon", "emulatorjs", "webassembly"],
+  "author": "",
+  "license": "MIT"
+}

@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Racing Lagoon (1999) - Web Edition</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="site-wrapper">
+    <!-- Header Retro Arcade -->
+    <header>
+      <div class="brand">
+        <span class="square-badge">SQUARE 1999</span>
+        <h1 class="logo-title">RACING LAGOON</h1>
+        <span class="sub-badge">YOKOHAMA MIDNIGHT GP</span>
+      </div>
+
+      <div class="header-actions">
+        <div class="hardware-pill">
+          <span class="pulse-dot"></span>
+          <span id="gamepad-status">Mando: Teclado activo</span>
+        </div>
+        <button class="btn btn-icon" id="fullscreen-btn" title="Pantalla completa">
+          ⛶ Pantalla Completa
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Stage Container -->
+    <main>
+      <div class="arcade-cabinet">
+        <div class="cabinet-marquee">
+          <div class="marquee-text">◆ HIGH SPEED DRIVING RPG ◆ 2 WARRIORS BATTLE MODE ◆</div>
+        </div>
+
+        <div class="screen-viewport">
+          <!-- EmulatorJS mount container -->
+          <div id="game-player"></div>
+
+          <!-- Dedicated Racing Lagoon Start Splash Screen -->
+          <div class="game-cover-overlay" id="cover-overlay">
+            <div class="cover-content">
+              <div class="glitch-title" data-text="RACING LAGOON">RACING LAGOON</div>
+              <p class="tagline">横浜最速伝説 · THE LEGEND OF YOKOHAMA RUNNERS</p>
+
+              <div class="status-banner" id="rom-status-banner">
+                <span class="spinner" id="loading-spinner" style="display: none;"></span>
+                <span id="loading-text">Preparando el motor de carrera...</span>
+              </div>
+
+              <div class="start-action-container">
+                <button class="btn btn-start-game" id="start-game-btn" disabled>
+                  <span class="btn-icon-play">▶</span>
+                  <span class="btn-text">INICIAR CARRERA</span>
+                </button>
+              </div>
+
+              <div class="game-modes-hint">
+                <span>✦ Modo Historia (RPG)</span>
+                <span>✦ 2 Warriors Battle (2P)</span>
+                <span>✦ 60 FPS WebGL</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="cabinet-bottom-bar">
+          <span class="disc-label">💿 PLAYSTATION DISC 1 · SLPS-02038</span>
+          <button class="btn btn-sm btn-ghost" id="reload-btn">🔄 Reiniciar Consola</button>
+        </div>
+      </div>
+
+      <!-- Controls and Info Dashboard -->
+      <div class="dashboard-grid">
+        <div class="dash-card">
+          <div class="card-header">
+            <h3>🎮 Controles de Carrera (Jugador 1)</h3>
+          </div>
+          <div class="card-body">
+            <div class="control-row">
+              <span class="action-name">Giro / Dirección</span>
+              <div class="keys"><span class="key">Flechas</span> o <span class="key">Stick Izquierdo</span></div>
+            </div>
+            <div class="control-row">
+              <span class="action-name">Acelerar (Cruz ✕)</span>
+              <div class="keys"><span class="key">X</span> / Botón <span class="key">A</span> (Xbox/Genérico)</div>
+            </div>
+            <div class="control-row">
+              <span class="action-name">Frenar / Marcha atrás (Cuadrado ◻)</span>
+              <div class="keys"><span class="key">Z</span> / Botón <span class="key">X</span></div>
+            </div>
+            <div class="control-row">
+              <span class="action-name">Freno de Mano (Círculo ◯)</span>
+              <div class="keys"><span class="key">S</span> / Botón <span class="key">B</span></div>
+            </div>
+            <div class="control-row">
+              <span class="action-name">Cambio de Marcha (Triángulo △)</span>
+              <div class="keys"><span class="key">A</span> / Botón <span class="key">Y</span></div>
+            </div>
+            <div class="control-row">
+              <span class="action-name">Start / Pausa</span>
+              <div class="keys"><span class="key">Enter</span> / <span class="key">Start</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="dash-card">
+          <div class="card-header">
+            <h3>🕹️ Modo 2 Jugadores (2 Warriors Battle)</h3>
+          </div>
+          <div class="card-body">
+            <p class="desc-text">
+              El juego incluye nativamente el modo batalla cara a cara para 2 pilotos.
+            </p>
+            <div class="feature-list">
+              <div class="feature-item">
+                <span class="feature-icon">🎮</span>
+                <div>
+                  <strong>Soporte Dual Gamepad</strong>
+                  <p>Conecta dos mandos a tu PC y el emulador asignará automáticamente el Jugador 1 y Jugador 2.</p>
+                </div>
+              </div>
+              <div class="feature-item">
+                <span class="feature-icon">💾</span>
+                <div>
+                  <strong>Guardado Automático</strong>
+                  <p>Tus Memory Cards de PS1 se guardan automáticamente en tu navegador.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <footer>
+      Racing Lagoon © 1999 Square Enix Co., Ltd. Port web con fines de preservación e investigación.
+    </footer>
+  </div>
+
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
