@@ -234,6 +234,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Netplay Configuration (Multiplayer Online)
     if (config.netplayServer) {
       window.EJS_netplayServer = config.netplayServer;
+      window.EJS_netplayUrl = config.netplayServer;
     }
     if (config.iceServers) {
       window.EJS_netplayICEServers = config.iceServers;
