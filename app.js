@@ -116,6 +116,166 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  // ==========================================
+  // PLAYSTATION 1 BIOS BOOT SEQUENCE & SYNTH
+  // ==========================================
+  const biosScreen = document.getElementById('ps1-bios-screen');
+  const biosStage1 = document.getElementById('bios-stage-1');
+  const biosStage2 = document.getElementById('bios-stage-2');
+
+  let audioCtx = null;
+  const activeOscillators = [];
+  let biosActive = false;
+  let biosTimeout1 = null;
+  let biosTimeout2 = null;
+
+  function initAudioContext() {
+    if (!audioCtx) {
+      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+      if (AudioContextClass) {
+        audioCtx = new AudioContextClass();
+      }
+    }
+    if (audioCtx && audioCtx.state === 'suspended') {
+      audioCtx.resume();
+    }
+  }
+
+  function playStage1Sound() {
+    if (!audioCtx) return;
+    const now = audioCtx.currentTime;
+
+    // Harmonized ethereal chord: D3, A3, D4, F#4
+    const chordNotes = [146.83, 220.00, 293.66, 369.99];
+
+    const filter = audioCtx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(220, now);
+    filter.frequency.exponentialRampToValueAtTime(3200, now + 1.8);
+    filter.Q.setValueAtTime(2.2, now);
+
+    const masterGain = audioCtx.createGain();
+    masterGain.gain.setValueAtTime(0.01, now);
+    masterGain.gain.linearRampToValueAtTime(0.3, now + 0.4);
+    masterGain.gain.exponentialRampToValueAtTime(0.001, now + 3.2);
+
+    filter.connect(masterGain);
+    masterGain.connect(audioCtx.destination);
+
+    chordNotes.forEach((freq, idx) => {
+      const osc = audioCtx.createOscillator();
+      osc.type = idx % 2 === 0 ? 'sawtooth' : 'triangle';
+      osc.frequency.setValueAtTime(freq, now);
+      osc.connect(filter);
+      osc.start(now);
+      osc.stop(now + 3.3);
+      activeOscillators.push(osc);
+    });
+  }
+
+  function playStage2Sound() {
+    if (!audioCtx) return;
+    const now = audioCtx.currentTime;
+
+    // Sub-bass whoosh (A1 dropping to deep drone)
+    const subOsc = audioCtx.createOscillator();
+    subOsc.type = 'sawtooth';
+    subOsc.frequency.setValueAtTime(55, now);
+    subOsc.frequency.exponentialRampToValueAtTime(42, now + 2.5);
+
+    const subFilter = audioCtx.createBiquadFilter();
+    subFilter.type = 'lowpass';
+    subFilter.frequency.setValueAtTime(140, now);
+    subFilter.frequency.linearRampToValueAtTime(80, now + 3.5);
+
+    const subGain = audioCtx.createGain();
+    subGain.gain.setValueAtTime(0.01, now);
+    subGain.gain.linearRampToValueAtTime(0.35, now + 0.3);
+    subGain.gain.exponentialRampToValueAtTime(0.001, now + 4.0);
+
+    subOsc.connect(subFilter);
+    subFilter.connect(subGain);
+    subGain.connect(audioCtx.destination);
+
+    subOsc.start(now);
+    subOsc.stop(now + 4.2);
+    activeOscillators.push(subOsc);
+
+    // Shimmering chimes / bell harmonics
+    const chimeFreqs = [880, 1320, 1760, 2640];
+    chimeFreqs.forEach((freq, i) => {
+      const chimeOsc = audioCtx.createOscillator();
+      chimeOsc.type = 'sine';
+      chimeOsc.frequency.setValueAtTime(freq, now + (i * 0.06));
+
+      const chimeGain = audioCtx.createGain();
+      chimeGain.gain.setValueAtTime(0.01, now + (i * 0.06));
+      chimeGain.gain.linearRampToValueAtTime(0.07, now + (i * 0.06) + 0.1);
+      chimeGain.gain.exponentialRampToValueAtTime(0.0001, now + 3.8);
+
+      chimeOsc.connect(chimeGain);
+      chimeGain.connect(audioCtx.destination);
+
+      chimeOsc.start(now + (i * 0.06));
+      chimeOsc.stop(now + 4.0);
+      activeOscillators.push(chimeOsc);
+    });
+  }
+
+  function stopAllBiosAudio() {
+    activeOscillators.forEach(osc => {
+      try { osc.stop(); } catch(e) {}
+    });
+    activeOscillators.length = 0;
+  }
+
+  function endBiosSequence() {
+    if (!biosActive) return;
+    biosActive = false;
+    clearTimeout(biosTimeout1);
+    clearTimeout(biosTimeout2);
+    stopAllBiosAudio();
+
+    biosScreen.classList.add('fade-out');
+    setTimeout(() => {
+      biosScreen.classList.remove('active', 'fade-out');
+      biosStage1.classList.remove('active');
+      biosStage2.classList.remove('active');
+    }, 800);
+  }
+
+  function runPs1BiosSequence() {
+    initAudioContext();
+    biosActive = true;
+    biosScreen.classList.remove('fade-out');
+    biosScreen.classList.add('active');
+
+    // Stage 1: White SCE Screen
+    biosStage1.classList.add('active');
+    biosStage2.classList.remove('active');
+    playStage1Sound();
+
+    // Stage 2: Black PlayStation Screen after 3.2s
+    biosTimeout1 = setTimeout(() => {
+      if (!biosActive) return;
+      biosStage1.classList.remove('active');
+      biosStage2.classList.add('active');
+      playStage2Sound();
+    }, 3200);
+
+    // End sequence after 7.2s and reveal game
+    biosTimeout2 = setTimeout(() => {
+      endBiosSequence();
+    }, 7200);
+  }
+
+  biosScreen.addEventListener('click', endBiosSequence);
+  window.addEventListener('keydown', (e) => {
+    if (biosActive && e.key !== 'F' && e.key !== 'f') {
+      endBiosSequence();
+    }
+  });
+
   // Start the game
   startGameBtn.addEventListener('click', () => {
     if (emulatorStarted) return;
@@ -123,6 +283,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Fade out cover
     coverOverlay.classList.add('hidden');
+
+    // Trigger authentic PS1 BIOS sequence!
+    runPs1BiosSequence();
 
     // Configure EmulatorJS globals
     window.EJS_player = '#game-player';
