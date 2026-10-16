@@ -3,216 +3,320 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Racing Lagoon (1999) - Web Edition</title>
+  <title>PlayStation™ · Racing Lagoon (1999) Web Edition</title>
   <link rel="stylesheet" href="style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700;800&family=Rajdhani:wght@500;600;700;800&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 </head>
 <body>
   <div class="site-wrapper">
-    <!-- Header Retro Arcade -->
+    <!-- Top Console Header: Sony PlayStation Branding & Hardware Status -->
     <header>
       <div class="brand">
-        <span class="square-badge">SQUARE 1999</span>
-        <h1 class="logo-title">RACING LAGOON</h1>
-        <span class="sub-badge">YOKOHAMA MIDNIGHT GP</span>
+        <!-- Iconic 4-Color PlayStation Logo SVG -->
+        <svg class="ps-logo-icon" viewBox="0 0 100 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- The Red P -->
+          <path d="M38 12C38 6.5 42.5 2 48 2H54C64 2 72 10 72 20C72 30 64 38 54 38H48V52H38V12ZM48 11V29H54C59 29 63 25 63 20C63 15 59 11 54 11H48Z" fill="#F33A26"/>
+          <!-- The Horizontal Yellow/Blue/Cyan S Shadow -->
+          <path d="M48 40L24 53C16 57 20 63 29 61L50 56V48L32 52C28 53 27 51 31 49L48 40Z" fill="#F9A01B"/>
+          <path d="M50 56L29 61C20 63 16 69 25 72L50 78V70L30 65C26 64 27 62 32 61L50 56Z" fill="#00A2E8"/>
+          <path d="M50 78L75 72C84 69 80 63 71 61L50 56V65L70 70C74 71 73 73 68 74L50 78Z" fill="#002D8B"/>
+        </svg>
+
+        <div class="brand-text-block">
+          <span class="sony-label">SONY COMPUTER ENTERTAINMENT</span>
+          <h1 class="logo-title">PlayStation<span class="accent">™</span> · RACING LAGOON</h1>
+          <span class="model-badge">MODEL SCPH-5500 · SLPS-02038 · NTSC-J</span>
+        </div>
       </div>
 
       <div class="header-actions">
-        <div class="hardware-pill">
-          <span class="pulse-dot"></span>
-          <span id="gamepad-status">Mando: Teclado activo</span>
+        <div class="ps-power-indicator">
+          <span class="power-led"></span>
+          <span class="power-text">POWER ON</span>
         </div>
-        <button class="btn btn-icon" id="fullscreen-btn" title="Pantalla completa">
+
+        <div class="hardware-pill">
+          <span id="gamepad-status">🎮 P1: Teclado Activo</span>
+        </div>
+
+        <button class="btn btn-ps-hardware" id="fullscreen-btn" title="Pantalla completa">
           ⛶ Pantalla Completa
         </button>
       </div>
     </header>
 
-    <!-- Main Stage Container -->
+    <!-- Main Stage: PlayStation 1 Hardware Chassis -->
     <main>
-      <div class="arcade-cabinet">
-        <div class="cabinet-marquee">
-          <div class="marquee-text">◆ HIGH SPEED DRIVING RPG ◆ 2 WARRIORS BATTLE MODE ◆</div>
+      <div class="ps1-console-unit">
+        <!-- Top Console Slits & Disc Info Strip -->
+        <div class="console-top-strip">
+          <div class="console-vent-strip">
+            <span class="vent-slit"></span>
+            <span class="vent-slit"></span>
+            <span class="vent-slit"></span>
+            <span class="vent-slit"></span>
+            <span class="vent-slit"></span>
+            <span class="vent-slit"></span>
+            <span class="vent-slit"></span>
+          </div>
+
+          <div class="console-identity-tag">
+            <span class="console-badge-text">COMPACT DISC DRIVE · 2X SPEED CD-ROM</span>
+            <div class="disc-lid-indicator">
+              <span class="disc-spin-icon"></span>
+              <span>DISCO INSERTADO: RACING LAGOON (DISC 1)</span>
+            </div>
+          </div>
+
+          <div class="console-vent-strip">
+            <span class="vent-slit"></span>
+            <span class="vent-slit"></span>
+            <span class="vent-slit"></span>
+            <span class="vent-slit"></span>
+            <span class="vent-slit"></span>
+            <span class="vent-slit"></span>
+            <span class="vent-slit"></span>
+          </div>
         </div>
 
-        <div class="screen-viewport">
-          <!-- EmulatorJS mount container -->
-          <div id="game-player"></div>
+        <!-- Physical Console Push Buttons (Power, Reset, Open) -->
+        <div class="console-physical-controls">
+          <button class="ps1-round-btn" id="reload-btn" title="Reiniciar consola PS1">
+            <span style="color: #ff3344;">●</span> RESET CONSOLE
+          </button>
+          <span style="font-family: var(--font-ps-mono); font-size: 0.72rem; color: #55545a; font-weight: 700;">
+            SQUARE 1999 · HIGH SPEED DRIVING RPG
+          </span>
+          <div class="ps1-round-btn" style="cursor: default;" title="Unidad de CD cerrada">
+            ⏏ DISC TRAY: CLOSED
+          </div>
+        </div>
 
-          <!-- Dedicated Racing Lagoon Start Splash Screen -->
-          <div class="game-cover-overlay" id="cover-overlay">
-            <div class="cover-content">
-              <div class="glitch-title" data-text="RACING LAGOON">RACING LAGOON</div>
-              <p class="tagline">横浜最速伝説 · THE LEGEND OF YOKOHAMA RUNNERS</p>
+        <!-- TV Screen / Trinitron Bezel Housing -->
+        <div class="screen-housing">
+          <div class="screen-viewport aspect-4-3">
+            <!-- EmulatorJS Core Canvas Container -->
+            <div id="game-player"></div>
 
-              <div class="status-banner" id="rom-status-banner">
-                <span class="spinner" id="loading-spinner" style="display: none;"></span>
-                <span id="loading-text">Preparando el motor de carrera...</span>
+            <!-- Authentic Racing Lagoon Start Splash Screen -->
+            <div class="game-cover-overlay" id="cover-overlay">
+              <div class="cover-content">
+                <div class="ps1-disc-graphic">
+                  <div class="ps1-disc-center"></div>
+                </div>
+
+                <div class="glitch-title">RACING LAGOON</div>
+                <p class="tagline">横浜最速伝説 · THE LEGEND OF YOKOHAMA RUNNERS</p>
+
+                <div class="status-banner" id="rom-status-banner">
+                  <span class="spinner" id="loading-spinner" style="display: none;"></span>
+                  <span id="loading-text">Verificando disco de Racing Lagoon...</span>
+                </div>
+
+                <div class="start-action-container">
+                  <button class="btn btn-start-game" id="start-game-btn" disabled>
+                    ▶ ENCENDER & CARGAR DISCO
+                  </button>
+                </div>
+
+                <div class="game-modes-hint">
+                  <span>✦ 1P Driving RPG</span>
+                  <span>✦ 2 Warriors Battle (Versus)</span>
+                  <span>✦ 60 FPS Emulation</span>
+                </div>
               </div>
+            </div>
 
-              <div class="start-action-container">
-                <button class="btn btn-start-game" id="start-game-btn" disabled>
-                  <span class="btn-icon-play">▶</span>
-                  <span class="btn-text">INICIAR CARRERA</span>
-                </button>
+            <!-- Authentic PlayStation 1 Full 1080p Video Intro Screen -->
+            <div class="ps1-video-screen" id="ps1-video-screen">
+              <video id="ps1-intro-video" playsinline preload="auto">
+                <source src="assets/videos/ps1_intro.mp4" type="video/mp4">
+              </video>
+              <div class="video-skip-hint">Toca o presiona cualquier tecla para omitir</div>
+            </div>
+
+            <!-- CRT Scanlines Overlay -->
+            <div class="crt-overlay" id="crt-overlay"></div>
+          </div>
+        </div>
+
+        <!-- PlayStation 1 Dual Controller Ports & Memory Card Slots -->
+        <div class="console-bottom-ports">
+          <div class="ports-group">
+            <div class="controller-port-unit">
+              <span class="port-label">1 ◀ CONTROLLER PORT 1</span>
+              <div class="socket-molding">
+                <span class="memory-slot-flap">MEMORY CARD 1</span>
+                <span class="d-sub-socket">🎮 DUALSHOCK (P1)</span>
               </div>
+            </div>
 
-              <div class="game-modes-hint">
-                <span>✦ Modo Historia (RPG)</span>
-                <span>✦ 2 Warriors Battle (2P)</span>
-                <span>✦ 60 FPS WebGL</span>
+            <div class="controller-port-unit">
+              <span class="port-label">2 ◀ CONTROLLER PORT 2</span>
+              <div class="socket-molding">
+                <span class="memory-slot-flap">MEMORY CARD 2</span>
+                <span class="d-sub-socket">🎮 DUALSHOCK (P2 / NETPLAY)</span>
               </div>
             </div>
           </div>
 
-          <!-- Authentic PlayStation 1 Video Intro Screen -->
-          <div class="ps1-video-screen" id="ps1-video-screen">
-            <video id="ps1-intro-video" playsinline preload="auto">
-              <source src="assets/videos/ps1_intro.mp4" type="video/mp4">
-            </video>
-            <div class="video-skip-hint">Toca o presiona cualquier tecla para saltar</div>
+          <div style="font-family: var(--font-ps-mono); font-size: 0.72rem; color: #55545a;">
+            SERIAL I/O · PARALLEL I/O
           </div>
-
-          <!-- CRT Scanlines layer -->
-          <div class="crt-overlay" id="crt-overlay"></div>
-        </div>
-
-        <!-- Video Enhancements Toolbar -->
-        <div class="video-toolbar">
-          <div class="toolbar-group">
-            <span class="toolbar-label">🎨 Filtro Gráfico:</span>
-            <button class="btn btn-tool active" data-filter="none">Nativo</button>
-            <button class="btn btn-tool" data-filter="crt">CRT Scanlines</button>
-            <button class="btn btn-tool" data-filter="smooth">Suavizado HD</button>
-            <button class="btn btn-tool" data-filter="neon">Yokohama Neón</button>
-          </div>
-          <div class="toolbar-group">
-            <span class="toolbar-label">📐 Formato:</span>
-            <button class="btn btn-tool active" data-aspect="4-3">4:3 Original</button>
-            <button class="btn btn-tool" data-aspect="16-9">16:9 Panorámico</button>
-          </div>
-        </div>
-
-        <div class="cabinet-bottom-bar">
-          <span class="disc-label">💿 PLAYSTATION DISC 1 · SLPS-02038</span>
-          <button class="btn btn-sm btn-ghost" id="reload-btn">🔄 Reiniciar Consola</button>
         </div>
       </div>
 
-      <!-- Controls and Info Dashboard -->
+      <!-- Video Filter & Aspect Ratio Toolbar (PS1 BIOS Style) -->
+      <div class="video-toolbar">
+        <div class="toolbar-group">
+          <span class="toolbar-label">📺 FILTRO DE PANTALLA:</span>
+          <button class="btn-tool active" data-filter="none">Nativo (Pixel)</button>
+          <button class="btn-tool" data-filter="crt">CRT Trinitron Scanlines</button>
+          <button class="btn-tool" data-filter="smooth">Suavizado HD</button>
+          <button class="btn-tool" data-filter="neon">Yokohama Neón</button>
+        </div>
+
+        <div class="toolbar-group">
+          <span class="toolbar-label">📐 FORMATO:</span>
+          <button class="btn-tool active" data-aspect="4-3">4:3 Original</button>
+          <button class="btn-tool" data-aspect="16-9">16:9 Panorámico</button>
+        </div>
+      </div>
+
+      <!-- Dashboard Grid: Memory Card Manager & Link Cable Netplay -->
       <div class="dashboard-grid">
+        <!-- Card 1: Memory Card & Controls -->
         <div class="dash-card">
-          <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
-            <h3>🎮 Controles de Carrera</h3>
-            <div class="player-tab-group">
-              <button class="btn btn-tool active" id="tab-p1-btn">Jugador 1</button>
-              <button class="btn btn-tool" id="tab-p2-btn">Jugador 2</button>
-            </div>
+          <div class="card-header">
+            <h3>🎮 CONTROLES DUALSHOCK & MEMORIA</h3>
+            <span class="slot-badge">SLOT 1 · 15 BLOQUES</span>
           </div>
           <div class="card-body">
-            <div id="controls-p1-panel">
+            <!-- Simulated PS1 BIOS Memory Card Save Block -->
+            <div class="memory-card-slot-display">
+              <div class="save-block-icon">🏎️</div>
+              <div class="save-block-info">
+                <span class="save-title">RACING LAGOON · SLPS-02038</span>
+                <span class="save-blocks-count">Guardado Virtual en Navegador (IndexedDB) · 1 Bloque</span>
+              </div>
+            </div>
+
+            <!-- Tab Selection for P1 / P2 -->
+            <div style="display: flex; gap: 0.5rem; margin-bottom: 0.8rem;">
+              <button class="btn-tool active" id="tab-p1-btn" style="flex: 1; padding: 0.45rem;">Piloto 1 (P1)</button>
+              <button class="btn-tool" id="tab-p2-btn" style="flex: 1; padding: 0.45rem;">Piloto 2 (P2)</button>
+            </div>
+
+            <div id="controls-p1-panel" class="controls-list">
               <div class="control-row">
-                <span class="action-name">Giro / Dirección</span>
-                <div class="keys"><span class="key">Flechas</span> o <span class="key">Stick Izquierdo</span></div>
+                <span class="action-name">Giro / Dirección (D-Pad)</span>
+                <div class="keys"><span class="key">Flechas</span> o <span class="key">Stick Izq</span></div>
               </div>
               <div class="control-row">
-                <span class="action-name">Acelerar (Cruz ✕)</span>
+                <span class="action-name"><span class="ps-symbol cross">✕</span> Acelerar</span>
                 <div class="keys"><span class="key">X</span> / Botón <span class="key">A</span> (Mando)</div>
               </div>
               <div class="control-row">
-                <span class="action-name">Frenar / Marcha atrás (Cuadrado ◻)</span>
-                <div class="keys"><span class="key">Z</span> / Botón <span class="key">X</span></div>
+                <span class="action-name"><span class="ps-symbol square">◻</span> Frenar / Reversa</span>
+                <div class="keys"><span class="key">Z</span> / Botón <span class="key">X</span> (Mando)</div>
               </div>
               <div class="control-row">
-                <span class="action-name">Freno de Mano (Círculo ◯)</span>
-                <div class="keys"><span class="key">S</span> / Botón <span class="key">B</span></div>
+                <span class="action-name"><span class="ps-symbol circle">◯</span> Freno de Mano</span>
+                <div class="keys"><span class="key">S</span> / Botón <span class="key">B</span> (Mando)</div>
               </div>
               <div class="control-row">
-                <span class="action-name">Cambio de Marcha (Triángulo △)</span>
-                <div class="keys"><span class="key">A</span> / Botón <span class="key">Y</span></div>
+                <span class="action-name"><span class="ps-symbol triangle">△</span> Subir/Bajar Marcha</span>
+                <div class="keys"><span class="key">A</span> / Botón <span class="key">Y</span> (Mando)</div>
               </div>
               <div class="control-row">
-                <span class="action-name">Start / Pausa</span>
+                <span class="action-name">START / Pausa</span>
                 <div class="keys"><span class="key">Enter</span> / <span class="key">Start</span></div>
               </div>
             </div>
 
-            <div id="controls-p2-panel" style="display: none;">
+            <div id="controls-p2-panel" class="controls-list" style="display: none;">
               <div class="control-row">
                 <span class="action-name">Giro / Dirección</span>
                 <div class="keys"><span class="key">W, A, S, D</span> o <span class="key">Mando 2</span></div>
               </div>
               <div class="control-row">
-                <span class="action-name">Acelerar (Cruz ✕)</span>
+                <span class="action-name"><span class="ps-symbol cross">✕</span> Acelerar</span>
                 <div class="keys"><span class="key">K</span> / Botón <span class="key">A</span> (Mando 2)</div>
               </div>
               <div class="control-row">
-                <span class="action-name">Frenar / Marcha atrás (Cuadrado ◻)</span>
-                <div class="keys"><span class="key">J</span> / Botón <span class="key">X</span></div>
+                <span class="action-name"><span class="ps-symbol square">◻</span> Frenar / Reversa</span>
+                <div class="keys"><span class="key">J</span> / Botón <span class="key">X</span> (Mando 2)</div>
               </div>
               <div class="control-row">
-                <span class="action-name">Freno de Mano (Círculo ◯)</span>
-                <div class="keys"><span class="key">L</span> / Botón <span class="key">B</span></div>
+                <span class="action-name"><span class="ps-symbol circle">◯</span> Freno de Mano</span>
+                <div class="keys"><span class="key">L</span> / Botón <span class="key">B</span> (Mando 2)</div>
               </div>
               <div class="control-row">
-                <span class="action-name">Cambio de Marcha (Triángulo △)</span>
-                <div class="keys"><span class="key">I</span> / Botón <span class="key">Y</span></div>
+                <span class="action-name"><span class="ps-symbol triangle">△</span> Marcha</span>
+                <div class="keys"><span class="key">I</span> / Botón <span class="key">Y</span> (Mando 2)</div>
               </div>
               <div class="control-row">
-                <span class="action-name">Start / Pausa</span>
-                <div class="keys"><span class="key">P</span> / <span class="key">Start (Mando 2)</span></div>
+                <span class="action-name">START / Pausa</span>
+                <div class="keys"><span class="key">P</span> / <span class="key">Start</span></div>
               </div>
             </div>
           </div>
         </div>
 
+        <!-- Card 2: PlayStation Link Cable & Netplay Online -->
         <div class="dash-card">
           <div class="card-header">
-            <h3>🌐 Centro Multijugador (Netplay Online)</h3>
+            <h3>🌐 LINK CABLE (SCPH-1040) · NETPLAY</h3>
+            <span class="slot-badge" style="color: #00ff66; border-color: rgba(0,255,102,0.4); background: rgba(0,255,102,0.1);">WEBRTC ONLINE</span>
           </div>
           <div class="card-body">
-            <p class="desc-text">
-              Compite cara a cara contra tus amigos por internet en el modo <strong>2 Warriors Battle</strong> con sincronización WebRTC de baja latencia.
-            </p>
-            
-            <div style="background: rgba(0, 255, 213, 0.12); border: 1px solid var(--cyan-neon); padding: 0.9rem 1.1rem; border-radius: 6px; margin-bottom: 1.2rem; text-align: center;">
-              <p style="font-size: 0.88rem; margin-bottom: 0.75rem; color: #fff;">
-                ¿El icono no se ve en la barra inferior? Pulsa el botón directo para abrir el lobby al instante:
+            <div class="netplay-launch-box">
+              <p style="font-size: 0.88rem; margin-bottom: 0.9rem; color: #d0e0ff;">
+                Lobby multijugador online P2P para retar a tus amigos en <strong>2 Warriors Battle</strong>:
               </p>
-              <button class="btn btn-secondary" id="open-netplay-btn" style="background: linear-gradient(135deg, #00ffd5, #0077ff); color: #000; font-weight: 800; font-size: 0.9rem; padding: 0.6rem 1.2rem; border: none; cursor: pointer; box-shadow: 0 0 15px rgba(0, 255, 213, 0.4); text-transform: uppercase; letter-spacing: 1px;">
+              <button class="btn btn-open-netplay-hub" id="open-netplay-btn">
                 🌐 ABRIR SALA MULTIJUGADOR (NETPLAY)
               </button>
             </div>
 
             <div class="multiplayer-steps">
-              <div class="step-badge">Paso 1</div>
-              <p>Inicia la carrera con <strong>INICIAR CARRERA</strong> y luego pulsa el botón celeste de arriba <strong>"ABRIR SALA MULTIJUGADOR"</strong> (o el icono 🌐 en la barra inferior del juego).</p>
-              
-              <div class="step-badge">Paso 2</div>
-              <p>Escribe tu nombre de piloto y pulsa <strong>"Create Room"</strong> para abrir tu sala.</p>
-
-              <div class="step-badge">Paso 3</div>
-              <p>Pasa el enlace a tu amigo (con el botón <em>Copiar Enlace</em>). Él abrirá la web, pulsará <strong>ABRIR SALA</strong> y elegirá <strong>"Join Room"</strong>.</p>
-
-              <div class="step-badge">Paso 4</div>
-              <p>En la pantalla de inicio de Racing Lagoon, seleccionen <strong>"2 Warriors Battle"</strong> y disfruten del versus.</p>
+              <div class="step-row">
+                <span class="step-num">01</span>
+                <div>Enciende la consola con <strong>"ENCENDER & CARGAR DISCO"</strong> y presiona el botón azul de arriba.</div>
+              </div>
+              <div class="step-row">
+                <span class="step-num">02</span>
+                <div>Ingresa tu nombre de piloto y pulsa <strong>"Create Room"</strong> para hostear la partida.</div>
+              </div>
+              <div class="step-row">
+                <span class="step-num">03</span>
+                <div>Copia el enlace de abajo y envíaselo a tu amigo. Él entrará, pulsará <em>Abrir Sala</em> y seleccionará <strong>"Join Room"</strong>.</div>
+              </div>
+              <div class="step-row">
+                <span class="step-num">04</span>
+                <div>En la pantalla de título del juego, bajen a <strong>"2 Warriors Battle"</strong> y aceleren en el circuito de Yokohama.</div>
+              </div>
             </div>
 
             <div style="margin-top: 1.2rem; display: flex; gap: 0.8rem; align-items: center; flex-wrap: wrap;">
-              <button class="btn btn-secondary" id="copy-invite-btn" style="font-size: 0.82rem; padding: 0.45rem 0.9rem;">
+              <button class="btn btn-secondary" id="copy-invite-btn">
                 🔗 Copiar Enlace para Amigo
               </button>
-              <span style="font-size: 0.78rem; color: #00ff66;">● Servidor Netplay Local & WebRTC Activo</span>
+              <span style="font-family: var(--font-ps-mono); font-size: 0.75rem; color: #00ff66;">
+                ● Servidor Netplay Local & WebRTC Activo
+              </span>
             </div>
           </div>
         </div>
       </div>
     </main>
 
+    <!-- Console BIOS Footer -->
     <footer>
-      Racing Lagoon © 1999 Square Enix Co., Ltd. Port web con fines de preservación e investigación.
+      SONY COMPUTER ENTERTAINMENT INC. · PlayStation™ y su logotipo son marcas registradas.<br>
+      Racing Lagoon © 1999 SQUARE ENIX CO., LTD. Port web con fines de investigación y preservación de software retro.
     </footer>
   </div>
 

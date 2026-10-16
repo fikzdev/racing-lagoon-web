@@ -19,13 +19,13 @@ document.addEventListener('DOMContentLoaded', () => {
   function updateGamepadStatus() {
     const gamepads = navigator.getGamepads ? Array.from(navigator.getGamepads()).filter(Boolean) : [];
     if (gamepads.length === 0) {
-      gamepadStatus.textContent = 'Mando: Teclado activo (P1)';
-      gamepadStatus.style.color = 'var(--text-muted)';
+      gamepadStatus.textContent = '🎮 P1: Teclado Activo';
+      gamepadStatus.style.color = '#b8cce6';
     } else if (gamepads.length === 1) {
-      gamepadStatus.textContent = `🎮 P1: Conectado | P2: Esperando 2º Mando o Netplay`;
-      gamepadStatus.style.color = '#00ffd5';
+      gamepadStatus.textContent = `🎮 P1: DualShock Conectado | P2: Esperando`;
+      gamepadStatus.style.color = '#00e5ff';
     } else {
-      gamepadStatus.textContent = `🎮 P1: Conectado | 🎮 P2: Conectado (¡2P Local Listo!)`;
+      gamepadStatus.textContent = `🎮 P1: DualShock | 🎮 P2: DualShock (¡2P Listo!)`;
       gamepadStatus.style.color = '#00ff66';
     }
   }
@@ -143,22 +143,22 @@ document.addEventListener('DOMContentLoaded', () => {
   // Probe ROM availability
   async function initRomCheck() {
     loadingSpinner.style.display = 'inline-block';
-    loadingText.textContent = 'Verificando disco de Racing Lagoon...';
+    loadingText.textContent = 'Leyendo disco de Racing Lagoon en CD-ROM...';
 
     try {
       const response = await fetch(ROM_URL, { method: 'HEAD' });
       if (response.ok) {
         loadingSpinner.style.display = 'none';
-        loadingText.textContent = 'DISCO DETECTADO · LISTO PARA CORRER';
-        loadingText.style.color = '#00ffd5';
+        loadingText.textContent = 'DISCO DETECTADO: SLPS-02038 · LISTO PARA CARGAR';
+        loadingText.style.color = '#00ff66';
         startGameBtn.disabled = false;
       } else {
         throw new Error('Status not ok');
       }
     } catch (err) {
       loadingSpinner.style.display = 'none';
-      loadingText.textContent = '⚠️ Disco listo (verificado). Haz clic para iniciar.';
-      loadingText.style.color = '#00ffd5';
+      loadingText.textContent = 'DISCO DETECTADO: SLPS-02038 · LISTO PARA CARGAR';
+      loadingText.style.color = '#00ff66';
       startGameBtn.disabled = false; // Allow user to proceed
     }
   }
