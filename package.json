@@ -1,12 +1,10 @@
 {
   "name": "racing-lagoon-web",
   "version": "1.0.0",
-  "description": "Racing Lagoon (PS1) Web Player & Dedicated Arcade Portal",
+  "private": true,
+  "description": "Racing Lagoon PS1 Dedicated Web Portal",
   "scripts": {
-    "start": "node local-server.js"
-  },
-  "dependencies": {
-    "socket.io": "^4.8.1"
+    "build": "echo 'Static arcade assets ready'"
   },
   "keywords": ["ps1", "racing-lagoon", "emulatorjs", "webassembly"],
   "license": "MIT"
