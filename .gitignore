@@ -9,5 +9,6 @@ roms/*.iso
 roms/*.chd
 *.bin
 *.ecm
-*.cue
+roms/source_dump/
 Racing Lagoon (Japan) [SLPS-02038] (1)/
+

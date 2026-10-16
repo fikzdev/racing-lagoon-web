@@ -23,6 +23,8 @@ const MIME_TYPES = {
   '.iso': 'application/octet-stream',
   '.pbp': 'application/octet-stream',
   '.zip': 'application/zip',
+  '.mp4': 'video/mp4',
+  '.webm': 'video/webm',
   '.mp3': 'audio/mpeg',
   '.ogg': 'audio/ogg'
 };

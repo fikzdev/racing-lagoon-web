@@ -67,42 +67,12 @@
             </div>
           </div>
 
-          <!-- Authentic PlayStation 1 BIOS Boot Screen -->
-          <div class="ps1-bios-screen" id="ps1-bios-screen">
-            <!-- Stage 1: Sony Computer Entertainment -->
-            <div class="bios-stage bios-stage-1" id="bios-stage-1">
-              <div class="sce-rhombus-container">
-                <div class="sce-diamond">
-                  <div class="sce-diamond-inner"></div>
-                </div>
-                <div class="sce-text">Sony Computer</div>
-                <div class="sce-subtext">Entertainment Inc.</div>
-              </div>
-            </div>
-
-            <!-- Stage 2: PlayStation License Screen -->
-            <div class="bios-stage bios-stage-2" id="bios-stage-2">
-              <div class="ps-logo-container">
-                <svg viewBox="0 0 512 393" width="100%" height="100%">
-                  <!-- Red Section ('P' loop) -->
-                  <path fill="#eb2130" d="M117.8 238.5c-15.3-5.7-27.4-14-36.2-25-8.8-11-13.2-24.1-13.2-39.2 0-14 3.9-26.4 11.8-37.1 7.8-10.8 18.5-19 32.1-24.7l5.3-2.1-1.2-5.4c-4.4-19.5-15.6-35-33.5-46.7C70 52.8 49.3 47 25.1 47L0 47.9l1.2 5.4c17.5 12 30.6 27.6 39.1 46.6 8.5 19 12.8 39.5 12.8 61.6 0 24.3-5.2 46.2-15.6 65.7-10.4 19.5-25.2 35-44.4 46.4l-4.7 2.8 5.1 2.3c27.1 12 55.4 18.1 84.8 18.1 14.1 0 28.1-1.6 42-4.9l5.5-1.3-4.2-4.1c-6.8-6.6-11.8-14-15-22.1z"/>
-                  <!-- Yellow Section -->
-                  <path fill="#f7af00" d="M208.5 292.1c-14.7 3.5-29.6 5.3-44.6 5.3-23.7 0-46.5-4.4-68.4-13.1l-5.6-2.2 3.6 4.6c13.7 17.5 31.6 31.3 53.7 41.3 22.1 10 46 15 71.7 15 19.8 0 38.6-3.1 56.4-9.3 17.8-6.2 33-15.1 45.6-26.6l4.2-3.9-4.8-2.3c-23-11.1-43.2-26-60.5-44.6l-3.9-4.1-4.8 2.5c-11.6 6.1-24.3 10.7-38.1 13.9z"/>
-                  <!-- Green / Cyan Section -->
-                  <path fill="#00a88f" d="M371.4 179.3c-1.3-17.7-6.9-33.5-16.7-47.3-9.8-13.9-22.5-24.8-38.1-32.9-15.6-8.1-33.1-12.2-52.5-12.2-15.8 0-30.8 2.6-45 7.8l-5.3 2 1.3 5.4c5.7 23.4 18.2 42 37.6 55.7 19.4 13.8 41.3 20.7 65.7 20.7 7.7 0 15.3-.8 22.8-2.3l5.7-1.2-1-5.7z"/>
-                  <!-- Blue Section ('S' bottom) -->
-                  <path fill="#006faf" d="M381.1 199.1c-8.9 11.2-20.2 20.2-34 27-13.8 6.8-29.2 10.2-46.1 10.2-24.7 0-47.5-6.8-68.3-20.3-20.8-13.5-35-32.3-42.5-56.3l-1.8-5.7-5.2 2.5c-15.9 7.6-29.1 17.9-39.7 30.8-10.6 13-17.5 28-20.7 45.1l-1 5.3 5.3 1.2c27.6 6.4 56.3 9.6 86.2 9.6 30.6 0 59.4-4.5 86.3-13.5 26.9-9 49.3-22.3 67.1-39.8l4.4-4.3-4.5-2.8z"/>
-                </svg>
-              </div>
-              <div class="ps-title-text">PlayStation<span class="ps-tm">™</span></div>
-              <div class="ps-license-block">
-                <div class="ps-license-title">Licensed by</div>
-                <div class="ps-company">Sony Computer Entertainment Inc.</div>
-                <div class="ps-scei">SCEI</div>
-              </div>
-            </div>
-
-            <div class="bios-skip-hint">Toca o presiona cualquier tecla para saltar</div>
+          <!-- Authentic PlayStation 1 Video Intro Screen -->
+          <div class="ps1-video-screen" id="ps1-video-screen">
+            <video id="ps1-intro-video" playsinline preload="auto">
+              <source src="assets/videos/ps1_intro.mp4" type="video/mp4">
+            </video>
+            <div class="video-skip-hint">Toca o presiona cualquier tecla para saltar</div>
           </div>
 
           <!-- CRT Scanlines layer -->
