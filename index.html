@@ -104,60 +104,98 @@
       <!-- Controls and Info Dashboard -->
       <div class="dashboard-grid">
         <div class="dash-card">
-          <div class="card-header">
-            <h3>🎮 Controles de Carrera (Jugador 1)</h3>
+          <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+            <h3>🎮 Controles de Carrera</h3>
+            <div class="player-tab-group">
+              <button class="btn btn-tool active" id="tab-p1-btn">Jugador 1</button>
+              <button class="btn btn-tool" id="tab-p2-btn">Jugador 2</button>
+            </div>
           </div>
           <div class="card-body">
-            <div class="control-row">
-              <span class="action-name">Giro / Dirección</span>
-              <div class="keys"><span class="key">Flechas</span> o <span class="key">Stick Izquierdo</span></div>
+            <div id="controls-p1-panel">
+              <div class="control-row">
+                <span class="action-name">Giro / Dirección</span>
+                <div class="keys"><span class="key">Flechas</span> o <span class="key">Stick Izquierdo</span></div>
+              </div>
+              <div class="control-row">
+                <span class="action-name">Acelerar (Cruz ✕)</span>
+                <div class="keys"><span class="key">X</span> / Botón <span class="key">A</span> (Mando)</div>
+              </div>
+              <div class="control-row">
+                <span class="action-name">Frenar / Marcha atrás (Cuadrado ◻)</span>
+                <div class="keys"><span class="key">Z</span> / Botón <span class="key">X</span></div>
+              </div>
+              <div class="control-row">
+                <span class="action-name">Freno de Mano (Círculo ◯)</span>
+                <div class="keys"><span class="key">S</span> / Botón <span class="key">B</span></div>
+              </div>
+              <div class="control-row">
+                <span class="action-name">Cambio de Marcha (Triángulo △)</span>
+                <div class="keys"><span class="key">A</span> / Botón <span class="key">Y</span></div>
+              </div>
+              <div class="control-row">
+                <span class="action-name">Start / Pausa</span>
+                <div class="keys"><span class="key">Enter</span> / <span class="key">Start</span></div>
+              </div>
             </div>
-            <div class="control-row">
-              <span class="action-name">Acelerar (Cruz ✕)</span>
-              <div class="keys"><span class="key">X</span> / Botón <span class="key">A</span> (Xbox/Genérico)</div>
-            </div>
-            <div class="control-row">
-              <span class="action-name">Frenar / Marcha atrás (Cuadrado ◻)</span>
-              <div class="keys"><span class="key">Z</span> / Botón <span class="key">X</span></div>
-            </div>
-            <div class="control-row">
-              <span class="action-name">Freno de Mano (Círculo ◯)</span>
-              <div class="keys"><span class="key">S</span> / Botón <span class="key">B</span></div>
-            </div>
-            <div class="control-row">
-              <span class="action-name">Cambio de Marcha (Triángulo △)</span>
-              <div class="keys"><span class="key">A</span> / Botón <span class="key">Y</span></div>
-            </div>
-            <div class="control-row">
-              <span class="action-name">Start / Pausa</span>
-              <div class="keys"><span class="key">Enter</span> / <span class="key">Start</span></div>
+
+            <div id="controls-p2-panel" style="display: none;">
+              <div class="control-row">
+                <span class="action-name">Giro / Dirección</span>
+                <div class="keys"><span class="key">W, A, S, D</span> o <span class="key">Mando 2</span></div>
+              </div>
+              <div class="control-row">
+                <span class="action-name">Acelerar (Cruz ✕)</span>
+                <div class="keys"><span class="key">K</span> / Botón <span class="key">A</span> (Mando 2)</div>
+              </div>
+              <div class="control-row">
+                <span class="action-name">Frenar / Marcha atrás (Cuadrado ◻)</span>
+                <div class="keys"><span class="key">J</span> / Botón <span class="key">X</span></div>
+              </div>
+              <div class="control-row">
+                <span class="action-name">Freno de Mano (Círculo ◯)</span>
+                <div class="keys"><span class="key">L</span> / Botón <span class="key">B</span></div>
+              </div>
+              <div class="control-row">
+                <span class="action-name">Cambio de Marcha (Triángulo △)</span>
+                <div class="keys"><span class="key">I</span> / Botón <span class="key">Y</span></div>
+              </div>
+              <div class="control-row">
+                <span class="action-name">Start / Pausa</span>
+                <div class="keys"><span class="key">P</span> / <span class="key">Start (Mando 2)</span></div>
+              </div>
             </div>
           </div>
         </div>
 
         <div class="dash-card">
           <div class="card-header">
-            <h3>🕹️ Modo 2 Jugadores (2 Warriors Battle)</h3>
+            <h3>🌐 Centro Multijugador (Netplay Online)</h3>
           </div>
           <div class="card-body">
             <p class="desc-text">
-              El juego incluye nativamente el modo batalla cara a cara para 2 pilotos.
+              Compite cara a cara contra tus amigos por internet en el modo <strong>2 Warriors Battle</strong> con sincronización WebRTC de baja latencia.
             </p>
-            <div class="feature-list">
-              <div class="feature-item">
-                <span class="feature-icon">🎮</span>
-                <div>
-                  <strong>Soporte Dual Gamepad</strong>
-                  <p>Conecta dos mandos a tu PC y el emulador asignará automáticamente el Jugador 1 y Jugador 2.</p>
-                </div>
-              </div>
-              <div class="feature-item">
-                <span class="feature-icon">💾</span>
-                <div>
-                  <strong>Guardado Automático</strong>
-                  <p>Tus Memory Cards de PS1 se guardan automáticamente en tu navegador.</p>
-                </div>
-              </div>
+            
+            <div class="multiplayer-steps">
+              <div class="step-badge">Paso 1</div>
+              <p>Inicia la carrera y abre el menú inferior del emulador pulsando el icono <strong>🌐 Netplay</strong>.</p>
+              
+              <div class="step-badge">Paso 2</div>
+              <p>Elige <strong>"Create Room"</strong> para abrir tu sala de juego.</p>
+
+              <div class="step-badge">Paso 3</div>
+              <p>Pasa el enlace de esta web a tu amigo para que entre y pulse <strong>"Join Room"</strong>.</p>
+
+              <div class="step-badge">Paso 4</div>
+              <p>En el menú de inicio de Racing Lagoon, baja a <strong>"2 Warriors Battle"</strong> y pulsa Start.</p>
+            </div>
+
+            <div style="margin-top: 1.2rem; display: flex; gap: 0.8rem; align-items: center; flex-wrap: wrap;">
+              <button class="btn btn-secondary" id="copy-invite-btn" style="font-size: 0.82rem; padding: 0.45rem 0.9rem;">
+                🔗 Copiar Enlace para Amigo
+              </button>
+              <span style="font-size: 0.78rem; color: #00ff66;">● Servidores WebRTC y TURN Listos</span>
             </div>
           </div>
         </div>

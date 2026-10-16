@@ -11,9 +11,19 @@ window.RACING_LAGOON_CONFIG = {
   // Servidor público de señalización Netplay para juego multijugador online
   netplayServer: 'https://netplay.emulatorjs.org/',
 
-  // Servidores STUN gratuitos de Google para conectar a los 2 jugadores por WebRTC
+  // Servidores STUN y TURN de alta disponibilidad para conectar jugadores por WebRTC
   iceServers: [
     { urls: 'stun:stun.l.google.com:19302' },
-    { urls: 'stun:stun1.l.google.com:19302' }
+    { urls: 'stun:stun1.l.google.com:19302' },
+    {
+      urls: 'turn:openrelay.metered.ca:80',
+      username: 'openrelayproject',
+      credential: 'openrelayproject'
+    },
+    {
+      urls: 'turn:openrelay.metered.ca:443',
+      username: 'openrelayproject',
+      credential: 'openrelayproject'
+    }
   ]
 };

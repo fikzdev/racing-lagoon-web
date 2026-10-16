@@ -15,16 +15,63 @@ document.addEventListener('DOMContentLoaded', () => {
   const config = window.RACING_LAGOON_CONFIG || {};
   const ROM_URL = config.romUrl || 'roms/racing_lagoon.zip';
 
-  // Gamepad Detection
-  window.addEventListener('gamepadconnected', (e) => {
-    gamepadStatus.textContent = `🎮 Mando detectado: ${e.gamepad.id.slice(0, 20)}...`;
-    gamepadStatus.style.color = '#00ff66';
-  });
+  // Multi-Gamepad Live Monitor
+  function updateGamepadStatus() {
+    const gamepads = navigator.getGamepads ? Array.from(navigator.getGamepads()).filter(Boolean) : [];
+    if (gamepads.length === 0) {
+      gamepadStatus.textContent = 'Mando: Teclado activo (P1)';
+      gamepadStatus.style.color = 'var(--text-muted)';
+    } else if (gamepads.length === 1) {
+      gamepadStatus.textContent = `🎮 P1: Conectado | P2: Esperando 2º Mando o Netplay`;
+      gamepadStatus.style.color = '#00ffd5';
+    } else {
+      gamepadStatus.textContent = `🎮 P1: Conectado | 🎮 P2: Conectado (¡2P Local Listo!)`;
+      gamepadStatus.style.color = '#00ff66';
+    }
+  }
 
-  window.addEventListener('gamepaddisconnected', () => {
-    gamepadStatus.textContent = 'Mando: Teclado activo';
-    gamepadStatus.style.color = 'var(--text-muted)';
-  });
+  window.addEventListener('gamepadconnected', updateGamepadStatus);
+  window.addEventListener('gamepaddisconnected', updateGamepadStatus);
+  setInterval(updateGamepadStatus, 2500);
+
+  // Tabbed Controls Switcher (P1 vs P2)
+  const tabP1Btn = document.getElementById('tab-p1-btn');
+  const tabP2Btn = document.getElementById('tab-p2-btn');
+  const controlsP1Panel = document.getElementById('controls-p1-panel');
+  const controlsP2Panel = document.getElementById('controls-p2-panel');
+
+  if (tabP1Btn && tabP2Btn) {
+    tabP1Btn.addEventListener('click', () => {
+      tabP1Btn.classList.add('active');
+      tabP2Btn.classList.remove('active');
+      controlsP1Panel.style.display = 'block';
+      controlsP2Panel.style.display = 'none';
+    });
+
+    tabP2Btn.addEventListener('click', () => {
+      tabP2Btn.classList.add('active');
+      tabP1Btn.classList.remove('active');
+      controlsP2Panel.style.display = 'block';
+      controlsP1Panel.style.display = 'none';
+    });
+  }
+
+  // Copy Invite Link Button
+  const copyInviteBtn = document.getElementById('copy-invite-btn');
+  if (copyInviteBtn) {
+    copyInviteBtn.addEventListener('click', () => {
+      const shareUrl = window.location.href;
+      navigator.clipboard.writeText(shareUrl).then(() => {
+        const originalText = copyInviteBtn.textContent;
+        copyInviteBtn.textContent = '✅ ¡Enlace Copiado!';
+        setTimeout(() => {
+          copyInviteBtn.textContent = originalText;
+        }, 2500);
+      }).catch(() => {
+        prompt('Copia este enlace para enviarlo a tu amigo:', shareUrl);
+      });
+    });
+  }
 
   // Fullscreen support (Button & 'F' key)
   function toggleFullscreen() {
