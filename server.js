@@ -1,6 +1,7 @@
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
+const { Server } = require('socket.io');
 
 const PORT = process.env.PORT || 8080;
 const PUBLIC_DIR = __dirname;
@@ -29,9 +30,59 @@ const MIME_TYPES = {
   '.ogg': 'audio/ogg'
 };
 
+// Rooms registry for EmulatorJS Netplay
+const rooms = {};
+
+// Clean up empty rooms every 60s
+setInterval(() => {
+  for (const sessionId in rooms) {
+    if (!rooms[sessionId].players || Object.keys(rooms[sessionId].players).length === 0) {
+      delete rooms[sessionId];
+    }
+  }
+}, 60000);
+
 const server = http.createServer((req, res) => {
   const parsedUrl = new URL(req.url, `http://${req.headers.host}`);
   let pathname = decodeURIComponent(parsedUrl.pathname);
+
+  // EmulatorJS Netplay Room Listing API
+  if (pathname === '/list') {
+    const gameId = parsedUrl.searchParams.get('game_id');
+    const openRooms = Object.keys(rooms)
+      .filter((sessionId) => {
+        const room = rooms[sessionId];
+        return (
+          room &&
+          Object.keys(room.players).length < room.maxPlayers &&
+          (!gameId || String(room.gameId) === String(gameId))
+        );
+      })
+      .reduce((acc, sessionId) => {
+        const room = rooms[sessionId];
+        const ownerPlayerId = Object.keys(room.players).find(
+          (playerId) => room.players[playerId].socketId === room.owner
+        );
+        const playerName = ownerPlayerId ? room.players[ownerPlayerId].player_name : 'Piloto Anónimo';
+        acc[sessionId] = {
+          room_name: room.roomName,
+          current: Object.keys(room.players).length,
+          max: room.maxPlayers,
+          player_name: playerName,
+          hasPassword: !!room.password,
+        };
+        return acc;
+      }, {});
+
+    res.writeHead(200, {
+      'Content-Type': 'application/json',
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type'
+    });
+    res.end(JSON.stringify(openRooms));
+    return;
+  }
 
   if (pathname === '/') {
     pathname = '/index.html';
@@ -107,9 +158,169 @@ const server = http.createServer((req, res) => {
   });
 });
 
+// Attach Socket.IO for real-time EmulatorJS Netplay
+const io = new Server(server, {
+  cors: {
+    origin: '*',
+    methods: ['GET', 'POST']
+  }
+});
+
+io.on('connection', (socket) => {
+  socket.on('open-room', (data, callback) => {
+    let sessionId, playerId, roomName, gameId, maxPlayers, playerName;
+    if (data.extra) {
+      sessionId = data.extra.sessionid;
+      playerId = data.extra.userid || data.extra.playerId;
+      roomName = data.extra.room_name;
+      gameId = data.extra.game_id;
+      maxPlayers = data.maxPlayers || 2;
+      playerName = data.extra.player_name || 'Piloto Anónimo';
+    }
+    if (!sessionId || !playerId) {
+      if (typeof callback === 'function') callback('Invalid data: sessionId and playerId required');
+      return;
+    }
+    if (rooms[sessionId]) {
+      if (typeof callback === 'function') callback('Room already exists');
+      return;
+    }
+
+    rooms[sessionId] = {
+      owner: socket.id,
+      players: { [playerId]: { ...data.extra, socketId: socket.id } },
+      peers: [],
+      roomName: roomName || `Sala ${sessionId.substring(0, 5)}`,
+      gameId: gameId || '992038',
+      password: data.password || null,
+      maxPlayers: maxPlayers,
+    };
+    socket.join(sessionId);
+    socket.sessionId = sessionId;
+    socket.playerId = playerId;
+    io.to(sessionId).emit('users-updated', rooms[sessionId].players);
+    if (typeof callback === 'function') callback(null);
+  });
+
+  socket.on('join-room', (data, callback) => {
+    const { sessionid: sessionId, userid: playerId } = data.extra || {};
+    
+    if (!sessionId || !playerId) {
+      if (typeof callback === 'function') callback('Invalid data: sessionId and playerId required');
+      return;
+    }
+
+    const room = rooms[sessionId];
+    if (!room) {
+      if (typeof callback === 'function') callback('Room not found');
+      return;
+    }
+
+    const roomPassword = data.password || null;
+    if (room.password && room.password !== roomPassword) {
+      if (typeof callback === 'function') callback('Incorrect password');
+      return;
+    }
+    
+    if (Object.keys(room.players).length >= room.maxPlayers) {
+      if (typeof callback === 'function') callback('Room full');
+      return;
+    }
+    
+    room.players[playerId] = { ...data.extra, socketId: socket.id };
+    socket.join(sessionId);
+    socket.sessionId = sessionId;
+    socket.playerId = playerId;
+    
+    io.to(sessionId).emit('users-updated', room.players);
+    if (typeof callback === 'function') callback(null, room.players);
+  });
+
+  socket.on('leave-room', () => {
+    if (socket.sessionId && socket.playerId) {
+      const sessionId = socket.sessionId;
+      const playerId = socket.playerId;
+      if (rooms[sessionId]) {
+        delete rooms[sessionId].players[playerId];
+        rooms[sessionId].peers = rooms[sessionId].peers.filter(
+          (peer) => peer.source !== socket.id && peer.target !== socket.id
+        );
+        io.to(sessionId).emit('users-updated', rooms[sessionId].players);
+        if (Object.keys(rooms[sessionId].players).length === 0) {
+          delete rooms[sessionId];
+        } else if (socket.id === rooms[sessionId].owner) {
+          const remainingPlayers = Object.keys(rooms[sessionId].players);
+          if (remainingPlayers.length > 0) {
+            const newOwnerId = rooms[sessionId].players[remainingPlayers[0]].socketId;
+            rooms[sessionId].owner = newOwnerId;
+            io.to(sessionId).emit('users-updated', rooms[sessionId].players);
+          }
+        }
+      }
+      socket.leave(sessionId);
+      delete socket.sessionId;
+      delete socket.playerId;
+    }
+  });
+
+  socket.on('webrtc-signal', (data) => {
+    try {
+      const { target, candidate, offer, answer, requestRenegotiate } = data || {};
+      if (requestRenegotiate) {
+        const targetSocket = io.sockets.sockets.get(target);
+        if (targetSocket) {
+          targetSocket.emit('webrtc-signal', {
+            sender: socket.id,
+            requestRenegotiate: true,
+          });
+        }
+      } else if (target) {
+        io.to(target).emit('webrtc-signal', {
+          sender: socket.id,
+          candidate,
+          offer,
+          answer,
+        });
+      }
+    } catch (error) {
+      console.error(`WebRTC signal error: ${error.message}`);
+    }
+  });
+
+  socket.on('data-message', (data) => {
+    if (socket.sessionId) {
+      socket.to(socket.sessionId).emit('data-message', data);
+    }
+  });
+
+  socket.on('snapshot', (data) => {
+    if (socket.sessionId) {
+      socket.to(socket.sessionId).emit('snapshot', data);
+    }
+  });
+
+  socket.on('input', (data) => {
+    if (socket.sessionId) {
+      socket.to(socket.sessionId).emit('input', data);
+    }
+  });
+
+  socket.on('disconnect', () => {
+    const sessionId = socket.sessionId;
+    const playerId = socket.playerId;
+    if (sessionId && playerId && rooms[sessionId]) {
+      delete rooms[sessionId].players[playerId];
+      io.to(sessionId).emit('users-updated', rooms[sessionId].players);
+      if (Object.keys(rooms[sessionId].players).length === 0) {
+        delete rooms[sessionId];
+      }
+    }
+  });
+});
+
 server.listen(PORT, () => {
   console.log(`\n======================================================`);
-  console.log(`🏎️  Racing Lagoon Web Server running at:`);
+  console.log(`🏎️  Racing Lagoon Web + Netplay Server running at:`);
   console.log(`    👉 http://localhost:${PORT}`);
   console.log(`======================================================\n`);
 });

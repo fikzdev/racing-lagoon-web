@@ -6,7 +6,15 @@
   "scripts": {
     "start": "node server.js"
   },
-  "keywords": ["ps1", "racing-lagoon", "emulatorjs", "webassembly"],
+  "keywords": [
+    "ps1",
+    "racing-lagoon",
+    "emulatorjs",
+    "webassembly"
+  ],
   "author": "",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "socket.io": "^4.8.4"
+  }
 }

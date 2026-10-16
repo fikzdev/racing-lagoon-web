@@ -8,8 +8,9 @@ window.RACING_LAGOON_CONFIG = {
   // Identificador único para almacenar la Memory Card virtual de PS1 en el navegador (IndexedDB)
   gameId: 992038,
 
-  // Servidor público de señalización Netplay para juego multijugador online
-  netplayServer: 'https://netplay.emulatorjs.org/',
+  // Servidor de señalización Netplay para juego multijugador online
+  // Por defecto utiliza el servidor integrado del proyecto (puerto actual / dominio actual)
+  netplayServer: window.location.origin,
 
   // Servidores STUN y TURN de alta disponibilidad para conectar jugadores por WebRTC
   iceServers: [

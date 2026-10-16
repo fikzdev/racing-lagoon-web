@@ -177,30 +177,34 @@
               Compite cara a cara contra tus amigos por internet en el modo <strong>2 Warriors Battle</strong> con sincronización WebRTC de baja latencia.
             </p>
             
-            <div style="background: rgba(0, 255, 213, 0.08); border-left: 3px solid var(--cyan-neon); padding: 0.75rem 1rem; border-radius: 4px; margin-bottom: 1rem; font-size: 0.85rem; line-height: 1.5;">
-              <strong>📍 ¿Dónde encontrar el menú de Netplay?</strong><br>
-              Una vez que termine la intro y comience el juego, <strong>mueve el ratón por la parte inferior de la pantalla del juego</strong>. Aparecerá la barra flotante de herramientas con el icono del globo terráqueo <strong>🌐 Netplay</strong> (o entra al engranaje ⚙️ <em>Ajustes ➔ Netplay</em>).
+            <div style="background: rgba(0, 255, 213, 0.12); border: 1px solid var(--cyan-neon); padding: 0.9rem 1.1rem; border-radius: 6px; margin-bottom: 1.2rem; text-align: center;">
+              <p style="font-size: 0.88rem; margin-bottom: 0.75rem; color: #fff;">
+                ¿El icono no se ve en la barra inferior? Pulsa el botón directo para abrir el lobby al instante:
+              </p>
+              <button class="btn btn-secondary" id="open-netplay-btn" style="background: linear-gradient(135deg, #00ffd5, #0077ff); color: #000; font-weight: 800; font-size: 0.9rem; padding: 0.6rem 1.2rem; border: none; cursor: pointer; box-shadow: 0 0 15px rgba(0, 255, 213, 0.4); text-transform: uppercase; letter-spacing: 1px;">
+                🌐 ABRIR SALA MULTIJUGADOR (NETPLAY)
+              </button>
             </div>
 
             <div class="multiplayer-steps">
               <div class="step-badge">Paso 1</div>
-              <p>Inicia la carrera y abre el menú inferior del emulador pulsando el icono <strong>🌐 Netplay</strong>.</p>
+              <p>Inicia la carrera con <strong>INICIAR CARRERA</strong> y luego pulsa el botón celeste de arriba <strong>"ABRIR SALA MULTIJUGADOR"</strong> (o el icono 🌐 en la barra inferior del juego).</p>
               
               <div class="step-badge">Paso 2</div>
-              <p>Elige <strong>"Create Room"</strong> para abrir tu sala de juego.</p>
+              <p>Escribe tu nombre de piloto y pulsa <strong>"Create Room"</strong> para abrir tu sala.</p>
 
               <div class="step-badge">Paso 3</div>
-              <p>Pasa el enlace de esta web a tu amigo para que entre y pulse <strong>"Join Room"</strong>.</p>
+              <p>Pasa el enlace a tu amigo (con el botón <em>Copiar Enlace</em>). Él abrirá la web, pulsará <strong>ABRIR SALA</strong> y elegirá <strong>"Join Room"</strong>.</p>
 
               <div class="step-badge">Paso 4</div>
-              <p>En el menú de inicio de Racing Lagoon, baja a <strong>"2 Warriors Battle"</strong> y pulsa Start.</p>
+              <p>En la pantalla de inicio de Racing Lagoon, seleccionen <strong>"2 Warriors Battle"</strong> y disfruten del versus.</p>
             </div>
 
             <div style="margin-top: 1.2rem; display: flex; gap: 0.8rem; align-items: center; flex-wrap: wrap;">
               <button class="btn btn-secondary" id="copy-invite-btn" style="font-size: 0.82rem; padding: 0.45rem 0.9rem;">
                 🔗 Copiar Enlace para Amigo
               </button>
-              <span style="font-size: 0.78rem; color: #00ff66;">● Servidores WebRTC y TURN Listos</span>
+              <span style="font-size: 0.78rem; color: #00ff66;">● Servidor Netplay Local & WebRTC Activo</span>
             </div>
           </div>
         </div>

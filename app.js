@@ -228,17 +228,54 @@ document.addEventListener('DOMContentLoaded', () => {
     window.EJS_alignStartButton = 'center';
     window.EJS_gameUrl = ROM_URL;
 
+    // Enable Netplay button explicitly in EmulatorJS
+    window.EJS_Buttons = {
+      netplay: true
+    };
+    window.EJS_DEBUG_XX = true;
+    window.EJS_EXPERIMENTAL_NETPLAY = true;
+
     // Persistent Memory Card ID in IndexedDB
     window.EJS_gameID = config.gameId || 992038;
 
     // Netplay Configuration (Multiplayer Online)
-    if (config.netplayServer) {
-      window.EJS_netplayServer = config.netplayServer;
-      window.EJS_netplayUrl = config.netplayServer;
-    }
+    const netplayHost = config.netplayServer || window.location.origin;
+    window.EJS_netplayServer = netplayHost;
+    window.EJS_netplayUrl = netplayHost;
+
     if (config.iceServers) {
       window.EJS_netplayICEServers = config.iceServers;
     }
+
+    // Unhide and reinforce Netplay toolbar button on emulator ready
+    function forceNetplayButtonVisible() {
+      try {
+        if (window.EJS_emulator) {
+          window.EJS_emulator.netplayEnabled = true;
+          if (window.EJS_emulator.elements && window.EJS_emulator.elements.bottomBar) {
+            const netplayBtns = window.EJS_emulator.elements.bottomBar.netplay;
+            if (netplayBtns && netplayBtns[0]) {
+              netplayBtns[0].style.display = 'inline-flex';
+              netplayBtns[0].style.visibility = 'visible';
+              netplayBtns[0].style.opacity = '1';
+            }
+          }
+        }
+      } catch (e) {
+        console.warn('Netplay button visibility hook:', e);
+      }
+    }
+
+    window.EJS_ready = () => {
+      forceNetplayButtonVisible();
+    };
+
+    window.EJS_onGameStart = () => {
+      forceNetplayButtonVisible();
+    };
+
+    // Keep checking periodically to override any late hidden styles
+    const netplayCheckInterval = setInterval(forceNetplayButtonVisible, 1000);
 
     // Check optional Japanese BIOS
     fetch('bios/scph5500.bin', { method: 'HEAD' })
@@ -255,6 +292,28 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.appendChild(loaderScript);
       });
   });
+
+  // Dedicated Netplay Launcher Button
+  const openNetplayBtn = document.getElementById('open-netplay-btn');
+  if (openNetplayBtn) {
+    openNetplayBtn.addEventListener('click', () => {
+      if (!emulatorStarted) {
+        alert('⚠️ Primero debes presionar "INICIAR CARRERA". Una vez que arranque el juego, pulsa aquí para abrir o unirte a una sala de Netplay.');
+        return;
+      }
+
+      if (window.EJS_emulator && typeof window.EJS_emulator.openNetplayMenu === 'function') {
+        window.EJS_emulator.openNetplayMenu();
+      } else {
+        const npBtn = window.EJS_emulator?.elements?.bottomBar?.netplay?.[0];
+        if (npBtn) {
+          npBtn.click();
+        } else {
+          alert('⏳ El emulador aún está cargando los módulos... Espera unos segundos y vuelve a pulsar.');
+        }
+      }
+    });
+  }
 
   initRomCheck();
 });
