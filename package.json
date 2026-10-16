@@ -1,20 +1,13 @@
 {
   "name": "racing-lagoon-web",
   "version": "1.0.0",
-  "description": "Racing Lagoon (PS1) Web Player & Reverse Engineering Playground",
-  "main": "server.js",
+  "description": "Racing Lagoon (PS1) Web Player & Dedicated Arcade Portal",
   "scripts": {
-    "start": "node server.js"
+    "start": "node local-server.js"
   },
-  "keywords": [
-    "ps1",
-    "racing-lagoon",
-    "emulatorjs",
-    "webassembly"
-  ],
-  "author": "",
-  "license": "MIT",
   "dependencies": {
-    "socket.io": "^4.8.4"
-  }
+    "socket.io": "^4.8.1"
+  },
+  "keywords": ["ps1", "racing-lagoon", "emulatorjs", "webassembly"],
+  "license": "MIT"
 }
