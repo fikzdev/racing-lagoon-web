@@ -3,10 +3,10 @@ const isLocal = window.location.hostname === 'localhost' || window.location.host
 
 window.RACING_LAGOON_CONFIG = {
   // En desarrollo local usa el archivo del servidor local.
-  // En producción (Vercel) descarga directamente el disco alojado en el Release v1.0.0 de GitHub.
+  // En producción (Vercel) descarga el disco a través del Cloudflare Worker con CORS habilitado
   romUrl: isLocal 
     ? 'roms/racing_lagoon.zip' 
-    : 'https://github.com/fikzdev/racing-lagoon-web/releases/download/v1.0.0/racing_lagoon.zip',
+    : 'https://racing-lagoon-web.antoniofigueroqsanzana.workers.dev/',
 
   // Identificador único para almacenar la Memory Card virtual de PS1 en el navegador (IndexedDB)
   gameId: 992038,
