@@ -60,10 +60,20 @@ document.addEventListener('DOMContentLoaded', () => {
   const copyInviteBtn = document.getElementById('copy-invite-btn');
   if (copyInviteBtn) {
     copyInviteBtn.addEventListener('click', () => {
-      const shareUrl = window.location.href;
+      let shareUrl = window.location.origin + window.location.pathname;
+      if (window.RL_ACTIVE_ROOM && window.RL_ACTIVE_ROOM.sessionId) {
+        const params = new URLSearchParams();
+        params.set('room', window.RL_ACTIVE_ROOM.sessionId);
+        if (window.RL_ACTIVE_ROOM.roomName) {
+          params.set('roomName', window.RL_ACTIVE_ROOM.roomName);
+        }
+        shareUrl += '?' + params.toString();
+      }
       navigator.clipboard.writeText(shareUrl).then(() => {
         const originalText = copyInviteBtn.textContent;
-        copyInviteBtn.textContent = '✅ ¡Enlace Copiado!';
+        copyInviteBtn.textContent = window.RL_ACTIVE_ROOM
+          ? '✅ ¡Enlace de Sala Copiado!'
+          : '✅ ¡Enlace Copiado!';
         setTimeout(() => {
           copyInviteBtn.textContent = originalText;
         }, 2500);
@@ -305,6 +315,9 @@ document.addEventListener('DOMContentLoaded', () => {
       try {
         if (window.EJS_emulator) {
           window.EJS_emulator.netplayEnabled = true;
+          if (window.RLNetplay) {
+            window.RLNetplay.attachToEmulator(window.EJS_emulator);
+          }
           if (window.EJS_emulator.elements && window.EJS_emulator.elements.bottomBar) {
             const netplayBtns = window.EJS_emulator.elements.bottomBar.netplay;
             if (netplayBtns && netplayBtns[0]) {
@@ -362,7 +375,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (openNetplayBtn) {
     openNetplayBtn.addEventListener('click', () => {
       if (!emulatorStarted) {
-        alert('⚠️ Primero debes presionar "INICIAR CARRERA". Una vez que arranque el juego, pulsa aquí para abrir o unirte a una sala de Netplay.');
+        alert('⚠️ Primero debes presionar "▶ ENCENDER & CARGAR DISCO". Una vez que arranque el juego, pulsa aquí para abrir o unirte a una sala de Netplay.');
         return;
       }
 
