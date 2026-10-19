@@ -15,6 +15,22 @@ document.addEventListener('DOMContentLoaded', () => {
   const config = window.RACING_LAGOON_CONFIG || {};
   const ROM_URL = config.romUrl || 'roms/racing_lagoon.zip';
 
+  // Check if user came from a direct invite link
+  const urlParams = new URLSearchParams(window.location.search);
+  const invitedRoomId = urlParams.get('room');
+  const invitedRoomName = urlParams.get('roomName');
+  if (invitedRoomId && startGameBtn) {
+    startGameBtn.innerHTML = '🏁 ENTRAR A LA SALA DE TU AMIGO';
+    startGameBtn.style.background = 'linear-gradient(135deg, #00ff88, #00d4ff)';
+    startGameBtn.style.color = '#000';
+    startGameBtn.style.fontWeight = 'bold';
+    startGameBtn.style.boxShadow = '0 0 25px rgba(0, 255, 136, 0.7)';
+    if (loadingText) {
+      loadingText.textContent = `⚡ Invitación detectada: "${invitedRoomName || 'Sala Multijugador'}". Pulsa para entrar.`;
+      loadingText.style.color = '#00ff88';
+    }
+  }
+
   // Multi-Gamepad Live Monitor
   function updateGamepadStatus() {
     const gamepads = navigator.getGamepads ? Array.from(navigator.getGamepads()).filter(Boolean) : [];
@@ -338,6 +354,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     window.EJS_onGameStart = () => {
       forceNetplayButtonVisible();
+      if (invitedRoomId) {
+        setTimeout(() => {
+          if (window.EJS_emulator && typeof window.EJS_emulator.openNetplayMenu === 'function') {
+            window.EJS_emulator.openNetplayMenu();
+          } else {
+            const npBtn = window.EJS_emulator?.elements?.bottomBar?.netplay?.[0];
+            if (npBtn) npBtn.click();
+          }
+        }, 1200);
+      }
     };
 
     // Keep checking periodically to override any late hidden styles
