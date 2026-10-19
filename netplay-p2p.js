@@ -1,8 +1,7 @@
 /**
  * Racing Lagoon Web — Serverless WebRTC P2P + Self-Electing Lobby Hub Engine
- * Drop-in replacement for EmulatorJS's Socket.IO + /list Netplay backend.
- * Uses PeerJS WebRTC DataChannels (with STUN/TURN) + BroadcastChannel (same-PC fast path).
- * Works 100% on Vercel / static hosting with zero external backend servers required.
+ * Drop-in replacement for EmulatorJS's Socket.IO + /list Netplay backend,
+ * plus full patch for EmulatorJS's broken Netplay input/frame-sync loop.
  */
 (function () {
   'use strict';
@@ -13,6 +12,10 @@
   const LOCAL_STORAGE_KEY = `rl_netplay_rooms_${GAME_ID}`;
   const CHUNK_SIZE = 16384; // 16 KB safe WebRTC DataChannel chunk size
   const ROOM_TTL_MS = 90 * 1000; // 90s TTL
+
+  // Default: Guest controls Port 1 (Controller 2 for "2 Warriors Battle"),
+  // can be toggled to Port 0 (Controller 1) to navigate 1P menus together.
+  window.RL_GUEST_SHARED_P1 = false;
 
   const ICE_SERVERS = CONFIG.iceServers || [
     { urls: 'stun:stun.l.google.com:19302' },
@@ -66,8 +69,6 @@
           resolve(peer);
         });
         peer.on('error', (err) => {
-          // Note: 'peer-unavailable' is emitted on the peer when connecting to a non-existent target,
-          // which does NOT destroy the discovery peer itself.
           if (!peer.open) {
             clearTimeout(timer);
             sharedDiscoveryPeerPromise = null;
@@ -95,7 +96,7 @@
   // 2. SELF-ELECTING LOBBY HUB + LOCAL STORAGE + URL INVITE REGISTRY (/list)
   // =========================================================================
   const memoryRooms = {};
-  const hubRegistry = {}; // Used when this browser tab is acting as the elected Lobby Hub
+  const hubRegistry = {};
   let lobbyHubPeer = null;
   let lobbyHubClientConn = null;
 
@@ -172,10 +173,6 @@
     return out;
   }
 
-  /**
-   * Ensures this host either claims the deterministic `LOBBY_HUB_PEER_ID` on PeerJS Cloud
-   * OR registers its room with whoever currently owns `LOBBY_HUB_PEER_ID`.
-   */
   async function publishRoomToLobbyHub(sessionId, roomMeta) {
     if (roomMeta === null) {
       delete hubRegistry[sessionId];
@@ -184,7 +181,6 @@
           lobbyHubClientConn.send({ type: 'unregister-room', sessionid: sessionId });
         } catch (e) {}
       }
-      // If we are the hub and have no more rooms, destroy hub peer so another host can claim it
       if (lobbyHubPeer && Object.keys(hubRegistry).length === 0) {
         try {
           lobbyHubPeer.destroy();
@@ -196,7 +192,6 @@
 
     hubRegistry[sessionId] = { ...roomMeta, ts: Date.now() };
 
-    // If we already own the Lobby Hub peer, hubRegistry is already up to date!
     if (lobbyHubPeer && !lobbyHubPeer.destroyed && lobbyHubPeer.open) {
       return;
     }
@@ -216,7 +211,6 @@
 
           candidateHub.on('connection', (conn) => {
             conn.on('open', () => {
-              // Immediately push current open rooms to any querying peer!
               conn.send({
                 type: 'rooms-list',
                 rooms: getActiveHubRoomsPayload()
@@ -247,7 +241,6 @@
             candidateHub.destroy();
           } catch (e) {}
 
-          // Another host already owns LOBBY_HUB_PEER_ID -> register our room with them!
           if (err && err.type === 'unavailable-id') {
             try {
               const discPeer = await getDiscoveryPeer();
@@ -273,16 +266,10 @@
     } catch (e) {}
   }
 
-  /**
-   * Queries open rooms from:
-   * 1. Local storage / same-PC rooms / URL invite parameter (?room=...)
-   * 2. Global PeerJS Lobby Hub (`LOBBY_HUB_PEER_ID`)
-   */
   async function fetchGlobalLobbyRooms() {
     const now = Date.now();
     const combined = { ...getLocalStoredRooms(), ...memoryRooms, ...getActiveHubRoomsPayload() };
 
-    // If this tab is NOT the lobby hub, query the remote Lobby Hub via PeerJS
     if (!lobbyHubPeer || !lobbyHubPeer.open) {
       try {
         const discPeer = await getDiscoveryPeer();
@@ -296,7 +283,6 @@
 
           const timer = setTimeout(() => finish({}), 2200);
 
-          // Listen for 'peer-unavailable' which fires in ~50ms if no host has created a room yet
           const onPeerError = (err) => {
             if (err && err.type === 'peer-unavailable') {
               clearTimeout(timer);
@@ -417,7 +403,245 @@
   }
 
   // =========================================================================
-  // 4. P2P SOCKET.IO ADAPTER (BroadcastChannel + PeerJS WebRTC DataChannel)
+  // 4. EMULATORJS NETPLAY INPUT & SYNC ENGINE PATCH
+  //    Fixes EmulatorJS 4.2.3's broken `postMainLoop` & `simulateInput`
+  //    so BOTH Host (Port 0) and Guest (Port 1 / Shared Port 0) work in real time!
+  // =========================================================================
+  function focusEmulatorCanvas(emu, closeNetplayModal = false) {
+    try {
+      if (closeNetplayModal && emu && emu.netplayMenu) {
+        emu.netplayMenu.style.display = 'none';
+      }
+      if (emu && emu.elements && emu.elements.parent) {
+        emu.elements.parent.focus();
+      }
+    } catch (e) {}
+  }
+
+  function patchNetplayInstance(emu) {
+    if (!emu || !emu.netplay) return;
+
+    // Always ensure getOpenRooms points to our Lobby Hub
+    emu.netplay.getOpenRooms = fetchGlobalLobbyRooms;
+
+    // Wait until defineNetplayFunctions has created emu.netplay.simulateInput
+    if (!emu.netplay.simulateInput || emu.netplay._rlInputPatched) return;
+    emu.netplay._rlInputPatched = true;
+
+    // 1. Fix reset() so it never corrupts init_frame or leaves syncing=true
+    emu.netplay.reset = () => {
+      try {
+        emu.netplay.init_frame =
+          emu.gameManager && typeof emu.gameManager.getFrameNum === 'function'
+            ? parseInt(emu.gameManager.getFrameNum()) || 0
+            : 0;
+      } catch (e) {
+        emu.netplay.init_frame = 0;
+      }
+      emu.netplay.currentFrame = 0;
+      emu.netplay.inputsData = {};
+      emu.netplay.syncing = false;
+      emu.netplay.wait = false;
+    };
+
+    // 2. Replace broken lockstep Module.postMainLoop that paused the Guest every frame
+    if (emu.Module) {
+      emu.Module.postMainLoop = () => {
+        if (!emu.isNetplay) return;
+        try {
+          emu.netplay.currentFrame =
+            parseInt(emu.gameManager.getFrameNum()) - (emu.netplay.init_frame || 0);
+        } catch (e) {}
+      };
+    }
+
+    // 3. Wrap roomJoined so joining a room focuses the canvas
+    if (typeof emu.netplay.roomJoined === 'function' && !emu.netplay._rlRoomJoinedWrapped) {
+      emu.netplay._rlRoomJoinedWrapped = true;
+      const origRoomJoined = emu.netplay.roomJoined.bind(emu.netplay);
+      emu.netplay.roomJoined = function (isOwner, roomName, password, roomId) {
+        origRoomJoined(isOwner, roomName, password, roomId);
+        // If joining as Guest, auto-close the Netplay popup so keys work immediately
+        setTimeout(() => focusEmulatorCanvas(emu, !isOwner), 150);
+      };
+    }
+
+    // 4. Reliable State Sync (Host -> Guest)
+    let isSyncing = false;
+    emu.netplay.sync = async () => {
+      if (isSyncing) return;
+      if (!emu.netplay.owner) {
+        emu.netplay.sendMessage({ sync: true });
+        return;
+      }
+      isSyncing = true;
+      try {
+        emu.netplay.ready = 0;
+        const state = emu.gameManager.getState();
+        emu.netplay.sendMessage({ state: state });
+        emu.netplay.setLoading(true);
+        emu.pause(true);
+        emu.netplay.ready++;
+        emu.netplay.current_frame = 0;
+        if (emu.netplay.ready >= emu.netplay.getUserCount()) {
+          emu.play(true);
+          emu.netplay.setLoading(false);
+          focusEmulatorCanvas(emu, false);
+        } else {
+          setTimeout(() => {
+            if (emu.paused && emu.isNetplay) {
+              emu.netplay.setLoading(false);
+              emu.play(true);
+              focusEmulatorCanvas(emu, true);
+            }
+          }, 3000);
+        }
+      } catch (e) {
+        console.warn('[Netplay P2P] Sync error:', e);
+        emu.play(true);
+      }
+      isSyncing = false;
+    };
+
+    // 5. Real-time Low-Latency Input for BOTH Host and Guest
+    emu.netplay.simulateInput = (player, index, value, resp) => {
+      if (!emu.isNetplay) return;
+      // Accept inputs whether the user presses P1 keys (player 0) or P2 keys (player 1) on their keyboard/gamepad
+      if (player !== 0 && player !== 1 && !resp) return;
+
+      let targetPort;
+      if (emu.netplay.owner) {
+        // Host controls Port 0 (Player 1), or Port 1 if pressing P2 keys locally
+        targetPort = player === 1 ? 1 : 0;
+      } else {
+        // Guest controls Port 1 (Player 2 in "2 Warriors Battle"), or Port 0 if shared menu mode is enabled
+        targetPort = window.RL_GUEST_SHARED_P1 ? 0 : 1;
+      }
+
+      // Execute immediately on local WASM core
+      if (emu.gameManager && emu.gameManager.functions && emu.gameManager.functions.simulateInput) {
+        emu.gameManager.functions.simulateInput(targetPort, index, value);
+      }
+
+      // Send immediately to remote peer(s)
+      emu.netplay.sendMessage({
+        'direct-input': [targetPort, index, value]
+      });
+    };
+
+    // 6. Clean dataMessage handler supporting direct-input + state sync + legacy sync-control
+    emu.netplay.dataMessage = (data) => {
+      if (!data) return;
+
+      // Real-time button/axis event from peer
+      if (data['direct-input']) {
+        const [port, index, value] = data['direct-input'];
+        if (emu.gameManager && emu.gameManager.functions && emu.gameManager.functions.simulateInput) {
+          emu.gameManager.functions.simulateInput(port, index, value);
+        }
+        return;
+      }
+
+      // Backwards compatibility if remote sends sync-control
+      if (data['sync-control'] && Array.isArray(data['sync-control'])) {
+        for (const item of data['sync-control']) {
+          if (item && item.connected_input) {
+            const [port, index, value] = item.connected_input;
+            if (emu.gameManager && emu.gameManager.functions && emu.gameManager.functions.simulateInput) {
+              emu.gameManager.functions.simulateInput(port, index, value);
+            }
+          }
+        }
+        return;
+      }
+
+      if (data.sync === true && emu.netplay.owner) {
+        emu.netplay.sync();
+        return;
+      }
+
+      if (data.state) {
+        emu.netplay.wait = false;
+        emu.netplay.syncing = false;
+        emu.netplay.setLoading(true);
+        emu.pause(true);
+        try {
+          emu.gameManager.loadState(new Uint8Array(data.state));
+        } catch (e) {
+          console.error('[Netplay P2P] loadState error:', e);
+        }
+        emu.netplay.sendMessage({ ready: true });
+        // Ensure Guest always resumes playing, closes modal, and gets keyboard focus within 200ms
+        setTimeout(() => {
+          if (emu.isNetplay) {
+            emu.netplay.setLoading(false);
+            emu.netplay.reset();
+            emu.play(true);
+            focusEmulatorCanvas(emu, true);
+          }
+        }, 200);
+        return;
+      }
+
+      if (data.ready && emu.netplay.owner) {
+        emu.netplay.ready = (emu.netplay.ready || 1) + 1;
+        if (emu.netplay.ready >= emu.netplay.getUserCount()) {
+          emu.netplay.sendMessage({ readyready: true });
+          emu.netplay.reset();
+          emu.netplay.setLoading(false);
+          setTimeout(() => {
+            emu.play(true);
+            focusEmulatorCanvas(emu, true);
+          }, 40);
+        }
+        return;
+      }
+
+      if (data.readyready) {
+        emu.netplay.setLoading(false);
+        emu.netplay.reset();
+        emu.play(true);
+        focusEmulatorCanvas(emu, true);
+        return;
+      }
+
+      if (data.play && !emu.netplay.owner) {
+        emu.play(true);
+      }
+      if (data.pause && !emu.netplay.owner) {
+        emu.pause(true);
+      }
+      if (data.restart) {
+        emu.gameManager.restart();
+        emu.netplay.reset();
+        emu.play(true);
+      }
+    };
+  }
+
+  // Forward window key events to EmulatorJS if the user is in Netplay and the canvas lost focus after closing the modal
+  window.addEventListener(
+    'keydown',
+    (e) => {
+      const emu = window.EJS_emulator;
+      if (!emu || !emu.started) return;
+      const tag = document.activeElement && document.activeElement.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+      if (emu.elements && emu.elements.parent && document.activeElement !== emu.elements.parent) {
+        // Refocus emulator parent so EmulatorJS's keyChange listener receives this and subsequent keys
+        emu.elements.parent.focus();
+        if (typeof emu.keyChange === 'function') {
+          try {
+            emu.keyChange(e);
+          } catch (err) {}
+        }
+      }
+    },
+    true
+  );
+
+  // =========================================================================
+  // 5. P2P SOCKET.IO ADAPTER (BroadcastChannel + PeerJS WebRTC DataChannel)
   // =========================================================================
   class RLNetplaySocket {
     constructor(url) {
@@ -431,13 +655,16 @@
       this.roomMeta = null;
       this.players = {};
       this.peer = null;
-      this.peerConns = new Map(); // peerId -> DataConnection
+      this.peerConns = new Map();
       this.bc = null;
       this.heartbeatTimer = null;
       this.incomingTransfers = new Map();
       this.seenMsgIds = new Set();
 
-      // Trigger Socket.IO 'connect' asynchronously so EmulatorJS registers its .on('connect') first
+      if (window.EJS_emulator) {
+        patchNetplayInstance(window.EJS_emulator);
+      }
+
       setTimeout(() => {
         this.connected = true;
         this._trigger('connect');
@@ -475,6 +702,9 @@
     }
 
     emit(event, data, callback) {
+      if (window.EJS_emulator) {
+        patchNetplayInstance(window.EJS_emulator);
+      }
       if (event === 'open-room') {
         this._handleOpenRoom(data, callback);
       } else if (event === 'join-room') {
@@ -486,9 +716,6 @@
       }
     }
 
-    // -----------------------------------------------------------------------
-    // HOST: Open a room
-    // -----------------------------------------------------------------------
     async _handleOpenRoom(data, callback) {
       const extra = (data && data.extra) || {};
       const sessionId = extra.sessionid;
@@ -519,10 +746,8 @@
         password: password
       };
 
-      // 1. Setup local BroadcastChannel for instant same-machine multiplayer
       this._setupBroadcastChannel(sessionId);
 
-      // 2. Setup PeerJS WebRTC Host with deterministic ID `rl-<gameId>-room-<sessionid>`
       try {
         const PeerClass = await Promise.race([
           ensurePeerJS(),
@@ -553,11 +778,9 @@
         console.warn('[Netplay P2P] Continuing with BroadcastChannel transport:', e);
       }
 
-      // 3. Save room locally & publish to global PeerJS Lobby Hub
       saveLocalRoom(sessionId, this.roomMeta);
       publishRoomToLobbyHub(sessionId, this.roomMeta);
 
-      // Keep room alive in Lobby Hub & localStorage every 25s
       this.heartbeatTimer = setInterval(() => {
         if (!this.connected || !this.isOwner) return;
         const currentCount = Object.keys(this.players).length;
@@ -566,23 +789,17 @@
         publishRoomToLobbyHub(sessionId, this.roomMeta);
       }, 25000);
 
-      // Update share URL with room info for convenience
       window.RL_ACTIVE_ROOM = { sessionId, roomName };
 
-      // 4. Complete open-room callback FIRST (sets emulator.netplay.owner = true)
       if (typeof callback === 'function') {
         callback(null);
       }
 
-      // 5. Notify EmulatorJS of initial player list
       setTimeout(() => {
         this._trigger('users-updated', { ...this.players });
       }, 30);
     }
 
-    // -----------------------------------------------------------------------
-    // CLIENT: Join an existing room
-    // -----------------------------------------------------------------------
     async _handleJoinRoom(data, callback) {
       const extra = (data && data.extra) || {};
       const sessionId = extra.sessionid;
@@ -618,7 +835,6 @@
 
       this._pendingJoinFinish = finishJoin;
 
-      // 1. Setup BroadcastChannel (instant join if on same PC)
       this._setupBroadcastChannel(sessionId);
       if (this.bc) {
         try {
@@ -632,7 +848,6 @@
         } catch (e) {}
       }
 
-      // 2. Connect via PeerJS WebRTC DataChannel to Host (`rl-<gameId>-room-<sessionid>`)
       try {
         const PeerClass = await Promise.race([
           ensurePeerJS(),
@@ -664,9 +879,6 @@
       }, 8000);
     }
 
-    // -----------------------------------------------------------------------
-    // TRANSPORTS: BroadcastChannel & PeerJS WebRTC DataChannels
-    // -----------------------------------------------------------------------
     _setupBroadcastChannel(sessionId) {
       if (typeof BroadcastChannel === 'undefined') return;
       try {
@@ -715,14 +927,12 @@
       };
       this.seenMsgIds.add(msg.msgId);
 
-      // 1. Send over BroadcastChannel (same PC)
       if (this.bc) {
         try {
           this.bc.postMessage(msg);
         } catch (e) {}
       }
 
-      // 2. Send over all active WebRTC DataConnections
       for (const conn of this.peerConns.values()) {
         if (conn && conn.open) {
           try {
@@ -767,25 +977,30 @@
           return;
         }
 
-        this.players[guestId] = {
+        // Ensure Host is always the first key in `this.players` (index 0) and Guest is second (index 1)
+        const hostEntry = this.players[this.playerId];
+        const orderedPlayers = {};
+        if (hostEntry) orderedPlayers[this.playerId] = hostEntry;
+        for (const [k, v] of Object.entries(this.players)) {
+          if (k !== this.playerId) orderedPlayers[k] = v;
+        }
+        orderedPlayers[guestId] = {
           ...guestExtra,
           socketId: env.senderId,
           peerId: sourceConn ? sourceConn.peer : null
         };
+        this.players = orderedPlayers;
 
-        // Update room count in lobby
         this.roomMeta.current = Object.keys(this.players).length;
         saveLocalRoom(this.sessionId, this.roomMeta);
         publishRoomToLobbyHub(this.sessionId, this.roomMeta);
 
-        // Acknowledge join to guest
         this._sendEnvelope({
           type: 'join-ack',
           targetId: env.senderId,
           users: this.players
         });
 
-        // Give guest 150ms to enter roomJoined state, then broadcast users-updated and trigger sync()
         setTimeout(() => {
           this._broadcastUsersUpdated();
         }, 150);
@@ -860,7 +1075,6 @@
     async _handleOutgoingDataMessage(data) {
       if (!data) return;
 
-      // Special handling for large binary PS1 save states (`data.state`)
       if (data.state && (data.state instanceof Uint8Array || data.state instanceof ArrayBuffer || ArrayBuffer.isView(data.state))) {
         const rawBytes =
           data.state instanceof Uint8Array
@@ -869,7 +1083,6 @@
             ? new Uint8Array(data.state)
             : new Uint8Array(data.state.buffer, data.state.byteOffset, data.state.byteLength);
 
-        // If on same PC with BroadcastChannel, BroadcastChannel can clone ArrayBuffer directly!
         if (this.bc) {
           try {
             this.bc.postMessage({
@@ -881,7 +1094,6 @@
           } catch (e) {}
         }
 
-        // For WebRTC DataChannels, compress + chunk into 16 KB slices so RTCDataChannel never overflows maxMessageSize
         if (this.peerConns.size > 0) {
           const { bytes, compressed } = await compressBytes(rawBytes);
           const totalChunks = Math.ceil(bytes.byteLength / CHUNK_SIZE);
@@ -924,7 +1136,6 @@
         return;
       }
 
-      // Standard Netplay messages (sync-control, ready, readyready, play, pause, etc.)
       this._sendEnvelope({
         type: 'data-message',
         data
@@ -978,7 +1189,7 @@
   }
 
   // =========================================================================
-  // 5. INSTALL GLOBAL `window.io` & EMULATORJS HOOKS
+  // 6. INSTALL GLOBAL `window.io` & EMULATORJS HOOKS
   // =========================================================================
   let activeSocket = null;
 
@@ -990,14 +1201,12 @@
     return activeSocket;
   }
 
-  // Clean up room if host closes the browser tab
   window.addEventListener('beforeunload', () => {
     if (activeSocket && activeSocket.connected) {
       activeSocket.disconnect();
     }
   });
 
-  // Lock `window.io` so EmulatorJS's CDN `socket.io.min.js` cannot overwrite our serverless P2P engine
   try {
     Object.defineProperty(window, 'io', {
       configurable: true,
@@ -1005,9 +1214,7 @@
       get() {
         return rlNetplayIo;
       },
-      set(_ignored) {
-        // Keep rlNetplayIo active even after EmulatorJS loads socket.io.min.js
-      }
+      set(_ignored) {}
     });
   } catch (e) {
     window.io = rlNetplayIo;
@@ -1015,9 +1222,18 @@
 
   window.RLNetplay = {
     getOpenRooms: fetchGlobalLobbyRooms,
+    patchNetplayInstance,
     attachToEmulator(emulator) {
-      if (!emulator || !emulator.netplay) return;
-      emulator.netplay.getOpenRooms = fetchGlobalLobbyRooms;
+      if (!emulator) return;
+      if (!emulator._rlDefineHooked && typeof emulator.defineNetplayFunctions === 'function') {
+        emulator._rlDefineHooked = true;
+        const origDefine = emulator.defineNetplayFunctions.bind(emulator);
+        emulator.defineNetplayFunctions = function () {
+          origDefine();
+          patchNetplayInstance(emulator);
+        };
+      }
+      patchNetplayInstance(emulator);
     }
   };
 })();

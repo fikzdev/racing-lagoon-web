@@ -392,5 +392,42 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // Sync Netplay Button
+  const syncNetplayBtn = document.getElementById('sync-netplay-btn');
+  if (syncNetplayBtn) {
+    syncNetplayBtn.addEventListener('click', () => {
+      const emu = window.EJS_emulator;
+      if (!emu || !emu.isNetplay || !emu.netplay) {
+        alert('⚠️ Primero debes crear o unirte a una sala de Netplay.');
+        return;
+      }
+      emu.netplay.sync();
+      if (emu.elements && emu.elements.parent) {
+        emu.elements.parent.focus();
+      }
+    });
+  }
+
+  // Toggle Guest Port Button (Port 1 = Mando 2 for 2 Warriors Battle vs Port 0 = Mando 1 for Menus)
+  const toggleGuestPortBtn = document.getElementById('toggle-guest-port-btn');
+  if (toggleGuestPortBtn) {
+    toggleGuestPortBtn.addEventListener('click', () => {
+      window.RL_GUEST_SHARED_P1 = !window.RL_GUEST_SHARED_P1;
+      if (window.RL_GUEST_SHARED_P1) {
+        toggleGuestPortBtn.textContent = '🎮 Invitado: Mando 1 (Menús)';
+        toggleGuestPortBtn.style.borderColor = '#00ffd5';
+        toggleGuestPortBtn.style.color = '#00ffd5';
+      } else {
+        toggleGuestPortBtn.textContent = '🎮 Invitado: Mando 2 (Versus)';
+        toggleGuestPortBtn.style.borderColor = '';
+        toggleGuestPortBtn.style.color = '';
+      }
+      const emu = window.EJS_emulator;
+      if (emu && emu.elements && emu.elements.parent) {
+        emu.elements.parent.focus();
+      }
+    });
+  }
+
   initRomPreload();
 });
