@@ -140,26 +140,79 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // Probe ROM availability
-  async function initRomCheck() {
-    loadingSpinner.style.display = 'inline-block';
-    loadingText.textContent = 'Leyendo disco de Racing Lagoon en CD-ROM...';
+  // ==========================================
+  // PRECARGA DEL DISCO EN SEGUNDO PLANO + CACHÉ
+  // ==========================================
+  const romProgressOverlay = document.getElementById('rom-progress-overlay');
+  const romProgressFill = document.getElementById('rom-progress-fill');
+  const romProgressLabel = document.getElementById('rom-progress-label');
+  const clearCacheBtn = document.getElementById('clear-rom-cache-btn');
 
+  const toMB = bytes => (bytes / 1048576).toFixed(0);
+
+  function renderRomProgress(s) {
+    const pct = s.total ? Math.min(100, Math.floor((s.loaded / s.total) * 100)) : 0;
+    let text = '';
+    let color = '#a0c0e8';
+
+    switch (s.status) {
+      case 'checking':
+        text = 'Buscando disco en la memoria del navegador...';
+        break;
+      case 'downloading':
+        text = s.total
+          ? `Copiando disco a tu navegador (solo la 1ª vez): ${pct}% · ${toMB(s.loaded)}/${toMB(s.total)} MB`
+          : `Copiando disco a tu navegador (solo la 1ª vez): ${toMB(s.loaded)} MB`;
+        break;
+      case 'ready':
+        text = s.fromCache
+          ? 'DISCO EN MEMORIA · CARGA INSTANTÁNEA'
+          : 'DISCO GUARDADO · LA PRÓXIMA VEZ CARGARÁ AL INSTANTE';
+        color = '#00ff66';
+        break;
+      case 'error':
+        text = 'No se pudo guardar el disco; se cargará directo desde internet.';
+        color = '#ffd700';
+        break;
+      default:
+        text = 'Preparando disco...';
+    }
+
+    loadingSpinner.style.display = (s.status === 'checking' || s.status === 'downloading') ? 'inline-block' : 'none';
+    loadingText.textContent = text;
+    loadingText.style.color = color;
+
+    if (romProgressFill) romProgressFill.style.width = `${s.status === 'ready' ? 100 : pct}%`;
+    if (romProgressLabel) romProgressLabel.textContent = text;
+  }
+
+  function initRomPreload() {
+    startGameBtn.disabled = false; // Se puede iniciar aunque siga descargando: el emulador esperará al disco
+    window.RomCache.onProgress(renderRomProgress);
+
+    // Respeta el modo "ahorro de datos" del móvil: en ese caso solo descarga al pulsar Iniciar
+    const saveData = navigator.connection && navigator.connection.saveData;
+    if (!saveData) {
+      window.RomCache.ensure(ROM_URL).catch(err => console.warn('Precarga del disco:', err));
+    }
+  }
+
+  if (clearCacheBtn) {
+    clearCacheBtn.addEventListener('click', async () => {
+      if (!confirm('¿Borrar el disco guardado en este navegador? (libera ~750 MB, se volverá a descargar la próxima vez)')) return;
+      await window.RomCache.clear();
+      location.reload();
+    });
+  }
+
+  /** Obtiene la URL que usará el emulador: el disco local en caché o, si falla, la URL remota. */
+  async function resolveGameUrl() {
     try {
-      const response = await fetch(ROM_URL, { method: 'HEAD' });
-      if (response.ok) {
-        loadingSpinner.style.display = 'none';
-        loadingText.textContent = 'DISCO DETECTADO: SLPS-02038 · LISTO PARA CARGAR';
-        loadingText.style.color = '#00ff66';
-        startGameBtn.disabled = false;
-      } else {
-        throw new Error('Status not ok');
-      }
+      const blob = await window.RomCache.ensure(ROM_URL);
+      return URL.createObjectURL(blob);
     } catch (err) {
-      loadingSpinner.style.display = 'none';
-      loadingText.textContent = 'DISCO DETECTADO: SLPS-02038 · LISTO PARA CARGAR';
-      loadingText.style.color = '#00ff66';
-      startGameBtn.disabled = false; // Allow user to proceed
+      console.warn('Usando descarga directa del disco:', err);
+      return ROM_URL;
     }
   }
 
@@ -277,20 +330,31 @@ document.addEventListener('DOMContentLoaded', () => {
     // Keep checking periodically to override any late hidden styles
     const netplayCheckInterval = setInterval(forceNetplayButtonVisible, 1000);
 
-    // Check optional Japanese BIOS
-    fetch('bios/scph5500.bin', { method: 'HEAD' })
+    // Check optional Japanese BIOS + esperar a que el disco esté en caché, luego arrancar el emulador
+    const biosCheck = fetch('bios/scph5500.bin', { method: 'HEAD' })
       .then(res => {
         if (res.ok) {
           window.EJS_biosUrl = 'bios/scph5500.bin';
         }
       })
-      .catch(() => {})
-      .finally(() => {
-        const loaderScript = document.createElement('script');
-        loaderScript.src = 'https://cdn.emulatorjs.org/stable/data/loader.js';
-        loaderScript.async = true;
-        document.body.appendChild(loaderScript);
-      });
+      .catch(() => {});
+
+    if (romProgressOverlay) romProgressOverlay.classList.add('active');
+
+    Promise.all([biosCheck, resolveGameUrl()]).then(([, gameUrl]) => {
+      window.EJS_gameUrl = gameUrl;
+      // Nombre fijo: mantiene el mismo slot de Memory Card venga el disco de la caché o de internet
+      window.EJS_gameName = 'Racing Lagoon (Japan)';
+      // Evita que EmulatorJS guarde una segunda copia de 750 MB en IndexedDB (ya lo hace RomCache)
+      window.EJS_CacheLimit = 0;
+
+      if (romProgressOverlay) romProgressOverlay.classList.remove('active');
+
+      const loaderScript = document.createElement('script');
+      loaderScript.src = 'https://cdn.emulatorjs.org/stable/data/loader.js';
+      loaderScript.async = true;
+      document.body.appendChild(loaderScript);
+    });
   });
 
   // Dedicated Netplay Launcher Button
@@ -315,5 +379,5 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  initRomCheck();
+  initRomPreload();
 });

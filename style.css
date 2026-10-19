@@ -692,6 +692,57 @@ main {
 }
 
 /* ==========================================================================
+   DISC LOADING OVERLAY (first-time copy into browser cache)
+   ========================================================================== */
+
+.rom-progress-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 15; /* below the intro video (20), above the emulator */
+  background: radial-gradient(circle at 50% 40%, rgba(10, 61, 145, 0.55) 0%, rgba(0, 10, 28, 0.97) 80%);
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.1rem;
+  padding: 2rem;
+  text-align: center;
+}
+
+.rom-progress-overlay.active {
+  display: flex;
+}
+
+.ps1-disc-graphic.spinning {
+  animation: spinDisc 1.2s linear infinite;
+  margin-bottom: 0;
+}
+
+.rom-progress-bar {
+  width: min(420px, 80%);
+  height: 10px;
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(0, 229, 255, 0.35);
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.rom-progress-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #2f80ed, var(--ps-bios-cyan));
+  box-shadow: 0 0 12px rgba(0, 229, 255, 0.6);
+  transition: width 0.25s ease;
+}
+
+.rom-progress-label {
+  font-family: var(--font-ps-mono);
+  font-size: 0.85rem;
+  color: #a0c0e8;
+  max-width: 520px;
+}
+
+/* ==========================================================================
    CONTROLLER PORTS (SOCKET 1 & SOCKET 2)
    ========================================================================== */
 

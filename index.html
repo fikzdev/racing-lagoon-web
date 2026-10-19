@@ -137,6 +137,13 @@
               <div class="video-skip-hint">Toca o presiona cualquier tecla para omitir</div>
             </div>
 
+            <!-- Disc loading overlay (shown only while the disc is still being copied the first time) -->
+            <div class="rom-progress-overlay" id="rom-progress-overlay">
+              <div class="ps1-disc-graphic spinning"><div class="ps1-disc-center"></div></div>
+              <div class="rom-progress-bar"><div class="rom-progress-fill" id="rom-progress-fill"></div></div>
+              <div class="rom-progress-label" id="rom-progress-label">Leyendo disco...</div>
+            </div>
+
             <!-- CRT Scanlines Overlay -->
             <div class="crt-overlay" id="crt-overlay"></div>
           </div>
@@ -199,8 +206,11 @@
               <div class="save-block-icon">🏎️</div>
               <div class="save-block-info">
                 <span class="save-title">RACING LAGOON · SLPS-02038</span>
-                <span class="save-blocks-count">Guardado Virtual en Navegador (IndexedDB) · 1 Bloque</span>
+                <span class="save-blocks-count">Partidas y disco guardados en este navegador · se descarga solo 1 vez</span>
               </div>
+              <button class="btn btn-secondary" id="clear-rom-cache-btn" style="margin-left: auto; font-size: 0.7rem; padding: 0.3rem 0.6rem;" title="Libera ~750 MB">
+                🗑 Borrar disco
+              </button>
             </div>
 
             <!-- Tab Selection for P1 / P2 -->
@@ -321,6 +331,7 @@
   </div>
 
   <script src="config.js"></script>
+  <script src="rom-cache.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
